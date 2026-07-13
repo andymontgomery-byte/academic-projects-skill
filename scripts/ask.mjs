@@ -41,6 +41,12 @@ switch (cmd) {
   case 'dictionary':
     out(await rest('/data_dictionary?select=*&order=table_name,column_name'));
     break;
+  case 'brainlift':
+    out(await rest('/brainlift?select=ord,insight,source&order=ord'));
+    break;
+  case 'improvements':
+    out(await rest('/improvement_requests?select=*&order=status,stack_rank.nullslast,created_at'));
+    break;
   case 'people':
     out(await rest('/people?select=name,email,team,notes&order=team,name'));
     break;
@@ -60,6 +66,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.error('commands: status | gaps | north-star | stack [subject] | stack-changes | dictionary | people | log [slug] | project <slug>');
+    console.error('commands: status | gaps | north-star | stack [subject] | stack-changes | dictionary | brainlift | improvements | people | log [slug] | project <slug>');
     process.exit(1);
 }

@@ -25,7 +25,12 @@ managers chasing answers. Delivering for students is its own best reward;
 this source exists to make successes and failures visible.
 
 **Best way to use me:**
-1. `node scripts/ask.mjs dictionary` — learn the schema from the database itself.
+0. `node scripts/ask.mjs brainlift` — the business insights on top of the raw
+   data (the Data Source Skills doctrine: pure raw data + a BrainLift so the
+   calling LLM builds its own intermediate layers; never pre-interpreted).
+1. `node scripts/ask.mjs dictionary` — learn the schema from the database
+   itself; every field has a technical definition and a product-manager
+   (business) description.
 2. `node scripts/ask.mjs status` — every project and its current state.
 3. `node scripts/ask.mjs gaps` — what's missing, per project. Route each gap
    to its owner/sponsor.
@@ -58,7 +63,9 @@ node scripts/ask.mjs gaps              # missing fields per project — the core
 node scripts/ask.mjs north-star        # SY 2026-27 changes: projects + stack diff
 node scripts/ask.mjs stack [subject]   # app-stack matrix: old / now / next per grade×role
 node scripts/ask.mjs stack-changes     # now→next diff — the per-cell Aug-1 answer
-node scripts/ask.mjs dictionary        # the data dictionary, from the DB
+node scripts/ask.mjs dictionary        # two-surface dictionary (technical + business), from the DB
+node scripts/ask.mjs brainlift         # the business insights — read these FIRST
+node scripts/ask.mjs improvements      # the self-improvement request queue
 node scripts/ask.mjs people            # owners / sponsors / teams
 node scripts/ask.mjs project <slug>    # one project incl. its 6 approval stages
 node scripts/ask.mjs log [slug]        # who changed what, when
@@ -69,6 +76,9 @@ node scripts/update.mjs create --as "you@alpha.school" --json '{"slug":"...","na
 node scripts/update.mjs set <slug> --as "you@alpha.school" --json '{"release_date":"2026-08-01"}'
 node scripts/update.mjs decide <slug> <stage> approved --as "you@alpha.school"
 node scripts/update.mjs person --as "you@alpha.school" --name "..." --email "..." --team academics
+
+# improvement loop (read key is enough — any calling LLM may file one)
+node scripts/update.mjs request --as "dashboard-skill" --text "Add a Reading app-stack matrix"
 ```
 
 ## Rules

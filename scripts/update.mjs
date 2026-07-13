@@ -45,11 +45,24 @@ switch (cmd) {
     out(await rpc('decide_stage', { p_slug: slug, p_stage: stage, p_status: status, p_decided_by: changedBy, p_notes: flag('notes') ?? null }));
     break;
   }
+  case 'request': {
+    // The self-improvement loop: any calling LLM (read key is enough) can
+    // file a request to improve the data source.
+    const { rest } = await import('./lib/api.mjs');
+    const text = flag('text');
+    if (!text) { console.error('usage: request --as <who> --text "<what should improve>"'); process.exit(1); }
+    out(await rest('/improvement_requests', {
+      method: 'POST',
+      body: { request: text, requested_by: changedBy },
+      headers: { Prefer: 'return=representation' },
+    }));
+    break;
+  }
   case 'person': {
     out(await rpc('upsert_person', { p_name: flag('name'), p_email: flag('email') ?? null, p_team: flag('team') ?? null, p_changed_by: changedBy }));
     break;
   }
   default:
-    console.error('commands: create | set <slug> | decide <slug> <stage> <status> | person');
+    console.error('commands: create | set <slug> | decide <slug> <stage> <status> | person | request');
     process.exit(1);
 }
