@@ -103,8 +103,15 @@ begin
   return jsonb_build_object('id', pid, 'name', p_name);
 end $$;
 
--- Write functions are for key-holders only, not the public anon key.
-revoke execute on function create_project(jsonb, text) from anon;
-revoke execute on function update_project(text, jsonb, text) from anon;
-revoke execute on function decide_stage(text, text, text, text, text) from anon;
-revoke execute on function upsert_person(text, text, text, text) from anon;
+-- Write functions are for write-key holders only. Revoking from anon alone
+-- is NOT enough: Postgres grants EXECUTE on functions to PUBLIC by default
+-- and anon inherits it (caught live by the e2e check, 2026-07-13).
+revoke execute on function create_project(jsonb, text) from public, anon;
+revoke execute on function update_project(text, jsonb, text) from public, anon;
+revoke execute on function decide_stage(text, text, text, text, text) from public, anon;
+revoke execute on function upsert_person(text, text, text, text) from public, anon;
+grant execute on function create_project(jsonb, text) to service_role;
+grant execute on function update_project(text, jsonb, text) to service_role;
+grant execute on function decide_stage(text, text, text, text, text) to service_role;
+grant execute on function upsert_person(text, text, text, text) to service_role;
+alter default privileges in schema public revoke execute on functions from public;
