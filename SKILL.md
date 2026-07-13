@@ -55,7 +55,9 @@ No other dependencies — plain Node ≥ 18, no npm install.
 # read (anon key is enough)
 node scripts/ask.mjs status            # all projects + derived current state
 node scripts/ask.mjs gaps              # missing fields per project — the core loop
-node scripts/ask.mjs north-star        # SY 2026-27 changes ready for Aug 1
+node scripts/ask.mjs north-star        # SY 2026-27 changes: projects + stack diff
+node scripts/ask.mjs stack [subject]   # app-stack matrix: old / now / next per grade×role
+node scripts/ask.mjs stack-changes     # now→next diff — the per-cell Aug-1 answer
 node scripts/ask.mjs dictionary        # the data dictionary, from the DB
 node scripts/ask.mjs people            # owners / sponsors / teams
 node scripts/ask.mjs project <slug>    # one project incl. its 6 approval stages
@@ -104,9 +106,22 @@ node scripts/update.mjs person --as "you@alpha.school" --name "..." --email "...
 Anyone can file feedback on the skill itself at the repo:
 <https://github.com/andymontgomery-byte/academic-projects-skill/issues>.
 
+## The app-stack matrix
+
+`app_stack` holds which app fills each **role** (base / hole_filling /
+supplement / test / supplement_test) of a subject×grade cell, per **era**
+(old / now / next-school-year-shipped-by-Aug-1). The `stack_changes` view
+diffs now→next; linking each changed cell to its delivering project
+(`project_slug`) is how progress gets measured. Math K-8 is loaded
+(transcribed from Andy's sheet screenshot 2026-07-13 — `source` says so;
+re-import from CSV when the sheet becomes readable). Other subjects: empty,
+i.e. owed.
+
 ## Roadmap
 
-- Ingest the partial-math-data sheet (blocked on sharing, 2026-07-13).
+- Re-import the math app-stack from the sheet itself when sharing opens
+  (currently screenshot-transcribed; grade K's now-supplement cell was
+  unreadable and is null).
 - Merge the shared "data source skills" pattern doc + parent/customer-facing
   summary format when accessible.
 - Fold into TimeBack (and the `timeback` skill) once proven standalone.

@@ -60,9 +60,20 @@ Every field-level change with `changed_by` — the accountability surface.
 Writes go through the RPC functions (`create_project`, `update_project`,
 `decide_stage`, `upsert_person`) which require a `changed_by`.
 
+## app_stack — the per-cell app matrix
+
+One row per `subject × grade × era × role`: which app fills the role in that
+cell. `era`: `old` (last year) / `now` (current production) / `next` (next
+school year, shipped by August 1). `role`: `base`, `hole_filling`,
+`supplement`, `test`, `supplement_test`. `project_slug` links a next-era cell
+to the replacement project delivering it. `source` carries provenance.
+Writes go through `set_stack_cell(...)` (attributed).
+
 ## Views
 
 - `project_status` — projects with names resolved + derived `current_state`.
 - `project_gaps` — missing dictionary fields per project. **The point.**
 - `sy2026_27_changes` — the north-star question: changes to the course
   sequence ready for students for the 2026-2027 school year (Aug 1).
+- `stack_changes` — now→next app-stack diff per subject×grade×role; the
+  per-cell form of the same north-star answer.

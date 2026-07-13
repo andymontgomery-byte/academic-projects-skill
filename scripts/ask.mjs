@@ -4,6 +4,8 @@
 //   node scripts/ask.mjs status                 # all projects + current state
 //   node scripts/ask.mjs gaps                   # missing fields per project (the point)
 //   node scripts/ask.mjs north-star             # SY 2026-27 Aug-1 changes
+//   node scripts/ask.mjs stack [subject]        # app-stack matrix (old/now/next)
+//   node scripts/ask.mjs stack-changes          # now→next diff per cell
 //   node scripts/ask.mjs dictionary             # the data dictionary
 //   node scripts/ask.mjs people                 # owners/sponsors roster
 //   node scripts/ask.mjs log [slug]             # change history
@@ -22,8 +24,19 @@ switch (cmd) {
   case 'gaps':
     out(await rest('/project_gaps?select=*'));
     break;
-  case 'north-star':
-    out(await rest('/sy2026_27_changes?select=*'));
+  case 'north-star': {
+    // Both halves of the answer: projects predicting an Aug-1 release, and
+    // the per-cell now→next app-stack changes.
+    const projects = await rest('/sy2026_27_changes?select=*');
+    const stackChanges = await rest('/stack_changes?select=*');
+    out({ projects, stackChanges });
+    break;
+  }
+  case 'stack':
+    out(await rest(`/app_stack?select=*${arg ? `&subject=eq.${encodeURIComponent(arg)}` : ''}&order=subject,grade,era,role`));
+    break;
+  case 'stack-changes':
+    out(await rest('/stack_changes?select=*'));
     break;
   case 'dictionary':
     out(await rest('/data_dictionary?select=*&order=table_name,column_name'));
@@ -47,6 +60,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.error('commands: status | gaps | north-star | dictionary | people | log [slug] | project <slug>');
+    console.error('commands: status | gaps | north-star | stack [subject] | stack-changes | dictionary | people | log [slug] | project <slug>');
     process.exit(1);
 }
