@@ -14,10 +14,9 @@
 import { rest } from './lib/api.mjs';
 
 const REQUIRED = [
-  'standards_covered', 'passes_test', 'entry_gate', 'xp_hours', 'effective_for',
+  'parent_summary', 'standards_covered', 'passes_test', 'entry_gate', 'xp_hours', 'effective_for',
   'owner', 'sponsor', 'subject', 'grade_min', 'grade_max',
-  'main_course_sequence', 'needs_supplements', 'deliverable', 'hole_filling',
-  'replaces', 'quantified_outcomes', 'xp', 'parent_summary',
+  'deliverable', 'replaces', 'hole_filling', 'supplements',
   'release_date', 'bottleneck',
 ];
 
@@ -27,11 +26,11 @@ if (!rows.length) { console.error(slug ? `no project ${slug}` : 'no projects'); 
 
 const report = rows.map((p) => {
   const missing = REQUIRED.filter((f) => p[f] === null || p[f] === undefined || p[f] === '');
-  const hasNumber = /\d/.test(p.quantified_outcomes ?? '');
+  const hasNumber = /\d/.test(p.passes_test ?? '');
   const feedback = [];
   if (missing.length) feedback.push(`Fill in: ${missing.join(', ')}.`);
-  if (!missing.includes('quantified_outcomes') && !hasNumber) {
-    feedback.push('quantified_outcomes has no number in it — state the measurable delta vs what it replaces (score, or hours to EOG mastery-gate pass).');
+  if (!missing.includes('passes_test') && !hasNumber) {
+    feedback.push('passes_test has no number in it — Q3 is the quantified outcome promise (test + threshold, vs what it replaces).');
   }
   if (!missing.length && hasNumber) feedback.push('Plan is complete — ready for the plan_approved_by_ai stage.');
   const score = Math.round(((REQUIRED.length - missing.length) / REQUIRED.length) * 100);

@@ -82,8 +82,10 @@ node scripts/update.mjs request --as "who-you-are" --text "what should improve"
   prefix to confirm. The AI review treats guessed fields as answered but
   will not pass the plan until they are verified. A null field with no
   evidence stays null — that gap belongs to its owner.
-- **Quantified outcomes need a number** — test scores or hours to
-  end-of-grade mastery-gate pass, vs what it replaces.
+- **Q3 is the quantified promise and needs numbers** — the
+  parent-recognizable test + threshold, and how that compares with what it
+  replaces (score or hours delta). There is no separate outcomes field; each
+  thing is asked exactly once.
 - **The six questions are structured fields** (Q1 = subject + grade range;
   Q2 `standards_covered`; Q3 `passes_test`; Q4 `entry_gate`; Q5 `xp_hours`;
   Q6 `effective_for`) — answer them in internal terms. **`parent_summary` is the FIRST requirement:**

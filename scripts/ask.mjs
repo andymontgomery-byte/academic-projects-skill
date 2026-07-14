@@ -36,7 +36,7 @@ switch (cmd) {
     const stackChanges = await rest('/stack_changes?select=*');
     const impactRank = (p) => {
       let r = 0;
-      if (p.quantified_outcomes && /\d/.test(p.quantified_outcomes)) r += 2;
+      if (p.passes_test && /\d/.test(p.passes_test)) r += 2;
       if (p.release_date && p.release_date <= '2026-08-01') r += 1;
       return r;
     };
@@ -51,14 +51,14 @@ switch (cmd) {
         release_date: p.release_date,
         on_track_for_aug1: p.release_date ? p.release_date <= '2026-08-01' : null,
         current_state: p.current_state ?? 'no approvals yet',
-        quantified_outcomes: p.quantified_outcomes ?? '(gap — impact not quantified; owner: ' + (p.owner ?? 'UNCLAIMED') + ')',
+        passes_test: p.passes_test ?? '(gap — Q3 outcome promise not made; owner: ' + (p.owner ?? 'UNCLAIMED') + ')',
         impact_rank: impactRank(p),
       }))
       .sort((a, b) => b.impact_rank - a.impact_rank || a.subject?.localeCompare(b.subject ?? '') || 0);
     out({
       question: 'What are the changes to the course sequence for the 2026-2027 school year ready for students on August 1st?',
       first_requirement: 'Each project must read very simply for parents who do not know internal details — parent_pitch leads every entry; a missing pitch fails the AI plan review.',
-      how_ranked: 'impact_rank: +2 quantified learning-outcome promise on file, +1 release date committed <= Aug 1. Ties by subject. Gaps are named, not hidden.',
+      how_ranked: 'impact_rank: +2 numeric Q3 outcome promise (passes_test) on file, +1 release date committed <= Aug 1. Ties by subject. Gaps are named, not hidden.',
       coverage_note: 'per_cell_stack_changes currently covers Math only — other subjects\' next-year cell matrices are an open gap (see improvements queue).',
       projects: ranked,
       per_cell_stack_changes: stackChanges,
