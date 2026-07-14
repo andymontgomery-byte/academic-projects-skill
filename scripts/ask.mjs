@@ -57,6 +57,7 @@ switch (cmd) {
     out({
       question: 'What are the changes to the course sequence for the 2026-2027 school year ready for students on August 1st?',
       how_ranked: 'impact_rank: +2 quantified learning-outcome promise on file, +1 release date committed <= Aug 1. Ties by subject. Gaps are named, not hidden.',
+      coverage_note: 'per_cell_stack_changes currently covers Math only — other subjects\' next-year cell matrices are an open gap (see improvements queue).',
       projects: ranked,
       per_cell_stack_changes: stackChanges,
     });
@@ -67,7 +68,12 @@ switch (cmd) {
     // mastery gates, hole-filling apps) served by the production dashboard.
     const r = await fetch('https://timeback-loops-k8.vercel.app/api/course-sequence');
     if (!r.ok) throw new Error(`course-sequence API ${r.status}`);
-    out(await r.json());
+    const seq = await r.json();
+    out({
+      grade_legend: 'grades are strings: "-1" = PreK, "0" = K, "1".."12" = G1..G12',
+      gate_note: 'MasteryTrack (=AlphaTest) assessments are the mastery gates; the app-stack "now" era names the same gates by test family (Alpha Standardized K-2, STAAR G3-8). Pass = score >= 89.5 (displayed 90%).',
+      ...seq,
+    });
     break;
   }
   case 'barriers': {
