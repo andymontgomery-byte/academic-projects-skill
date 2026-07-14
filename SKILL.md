@@ -76,13 +76,17 @@ node scripts/update.mjs request --as "who-you-are" --text "what should improve"
 ## Rules
 
 - **Every write is attributed** (`--as <who>` / the UI name box → change_log).
-- **Never invent data to close a gap.** A null field is a message to its
-  owner. Apply only what the owner/sponsor actually said, attributed to them.
+- **Never invent data — but DO prefill from evidence.** When an answer exists
+  in an email, a doc, or another data structure, fill the field prefixed
+  `[AI guess — verify]` with the source named; owners edit or strip the
+  prefix to confirm. The AI review treats guessed fields as answered but
+  will not pass the plan until they are verified. A null field with no
+  evidence stays null — that gap belongs to its owner.
 - **Quantified outcomes need a number** — test scores or hours to
   end-of-grade mastery-gate pass, vs what it replaces.
-- **The five questions are structured fields** (Q1 = subject + grade range;
-  Q2 `passes_test`; Q3 `entry_gate`; Q4 `xp_hours`; Q5 `effective_for`) —
-  answer them in internal terms. **`parent_summary` is the FIRST requirement:**
+- **The six questions are structured fields** (Q1 = subject + grade range;
+  Q2 `standards_covered`; Q3 `passes_test`; Q4 `entry_gate`; Q5 `xp_hours`;
+  Q6 `effective_for`) — answer them in internal terms. **`parent_summary` is the FIRST requirement:**
   it rephrases those structured answers in plain parent language (the Scribble
   example in Workflowy `#/929b0e407c72` is the register; the AI review rejects
   internal jargon in it). Also brainlift row 9.

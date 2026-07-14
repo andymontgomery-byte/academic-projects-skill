@@ -14,7 +14,7 @@
 import { rest } from './lib/api.mjs';
 
 const REQUIRED = [
-  'passes_test', 'entry_gate', 'xp_hours', 'effective_for',
+  'standards_covered', 'passes_test', 'entry_gate', 'xp_hours', 'effective_for',
   'owner', 'sponsor', 'subject', 'grade_min', 'grade_max',
   'main_course_sequence', 'needs_supplements', 'deliverable', 'hole_filling',
   'replaces', 'quantified_outcomes', 'xp', 'parent_summary',

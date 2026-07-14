@@ -1,64 +1,21 @@
--- The five questions get structure (Andy, 2026-07-14): owners answer each in
--- internal terms; parent_summary rephrases the structure in parent language.
--- Q1 (subject + grade levels) already lives in subject/grade_min/grade_max.
-
-alter table projects add column if not exists passes_test   text;
-alter table projects add column if not exists entry_gate    text;
-alter table projects add column if not exists xp_hours      text;
-alter table projects add column if not exists effective_for text;
+-- Question 2 added to the brainlift (WF 82041e9b, edited 2026-07-14 14:30Z):
+-- "what 3rd party standards does it cover? not cover?" — six questions now.
+alter table projects add column if not exists standards_covered text;
 
 insert into data_dictionary (table_name, column_name, definition, example, business) values
-('projects', 'passes_test', 'Q2: what standardized test (that parents will recognize or can look up) will students pass, at what threshold, after completing the course and its mastery gates?', 'Iowa Assessments Level 9 Social Studies, 90th+ percentile', 'The recognizable proof: a score a student can use to get into college, get a certification, or brag about.'),
-('projects', 'entry_gate', 'Q3: what mastery gate must a student pass, at what threshold, to START the course?', 'type + pass grade 2 reading', 'What a student needs before day one.'),
-('projects', 'xp_hours', 'Q4: XP hours to complete — median student / already-knows-it-all / passed-entry-but-knows-nothing; the XP-per-focused-minute range; and can students farm XP (earn without learning)?', 'median 7h; knows-all 5h; knows-nothing 10h; 0.9-1.1 XP/min; not farmable — if they are earning they are learning', 'How long it takes and whether the XP is honest.'),
-('projects', 'effective_for', 'Q5: which students will it be effective for — in general AND named Alpha students, each with a 1-2 week time-bound falsifiable hypothesis ("when student X is put in this course, 2 weeks later they will get 90%+ on mastery gate G").', 'anyone past grade-2 reading who can type; named: <students> with 2-week gate hypotheses', 'Who it is for, with testable predictions per named student.')
-on conflict (table_name, column_name) do update
-  set definition = excluded.definition, example = excluded.example, business = excluded.business;
+('projects', 'standards_covered', 'Q2: what 3rd-party standards does it cover? NOT cover? (both halves required)', 'covers CCSS Math G3-5 fully and TEKS G3-5; does NOT cover TEKS financial-literacy strands', 'The coverage contract: which official standards a parent/state can hold it to, and the honest exclusions.')
+on conflict (table_name, column_name) do update set definition = excluded.definition, example = excluded.example, business = excluded.business;
 
-update data_dictionary
-   set definition = 'THE FIRST REQUIREMENT: the plain-language rephrasing of the five structured answers (subject/grades, passes_test, entry_gate, xp_hours, effective_for) that a parent who knows no internal details can read. The Scribble example is the register. The AI review rejects it when a structured answer is missing or when it contains internal jargon.',
-       business = 'What a parent reads — the front door. The structure holds the facts; this holds the translation.'
- where table_name = 'projects' and column_name = 'parent_summary';
+update data_dictionary set definition = 'Q3: what standardized test (that parents will recognize or can look up) will students pass, at what threshold, after completing the course(s) and all the course(s)'' mastery gates?' where table_name = 'projects' and column_name = 'passes_test';
+update data_dictionary set definition = 'Q4: what mastery gate must a student pass, at what threshold, to START the course?' where table_name = 'projects' and column_name = 'entry_gate';
+update data_dictionary set definition = 'Q5: XP hours to complete — median student / already-knows-it-all / passed-entry-but-knows-nothing; the XP-per-focused-minute range; and can students farm XP (earn without learning)?' where table_name = 'projects' and column_name = 'xp_hours';
+update data_dictionary set definition = 'Q6: which students will it be effective for — in general AND named Alpha students, each with a 1-2 week time-bound falsifiable hypothesis ("when student X is put in this course, 2 weeks later they will get 90%+ on mastery gate G").' where table_name = 'projects' and column_name = 'effective_for';
+update data_dictionary set definition = 'THE FIRST REQUIREMENT: the plain-language rephrasing of the six structured answers (subject/grades, standards_covered, passes_test, entry_gate, xp_hours, effective_for) that a parent who knows no internal details can read. The Scribble example is the register. The AI review rejects it when a structured answer is missing or when it contains internal jargon.' where table_name = 'projects' and column_name = 'parent_summary';
 
-create or replace function create_project(fields jsonb, p_changed_by text)
-returns jsonb language plpgsql security definer as $$
-declare
-  new_id uuid;
-  stage text;
-begin
-  perform set_config('app.changed_by', p_changed_by, true);
-  insert into projects (slug, name, owner_id, sponsor_id, subject, grade_min, grade_max,
-    main_course_sequence, needs_supplements, contains_supplements, supplements_notes,
-    deliverable, hole_filling, replaces, quantified_outcomes, xp, parent_summary,
-    passes_test, entry_gate, xp_hours, effective_for,
-    release_date, bottleneck, notes, created_by)
-  values (
-    fields->>'slug', fields->>'name',
-    (select id from people where name = fields->>'owner'),
-    (select id from people where name = fields->>'sponsor'),
-    fields->>'subject',
-    (fields->>'grade_min')::int, (fields->>'grade_max')::int,
-    fields->>'main_course_sequence',
-    (fields->>'needs_supplements')::boolean, (fields->>'contains_supplements')::boolean,
-    fields->>'supplements_notes', fields->>'deliverable', fields->>'hole_filling',
-    fields->>'replaces', fields->>'quantified_outcomes', fields->>'xp',
-    fields->>'parent_summary',
-    fields->>'passes_test', fields->>'entry_gate', fields->>'xp_hours', fields->>'effective_for',
-    (fields->>'release_date')::date,
-    fields->>'bottleneck', fields->>'notes', p_changed_by)
-  returning id into new_id;
-  foreach stage in array array[
-    'plan_approved_by_ai','approved_by_learning_science','ready_for_students',
-    'approved_by_andy','approved_by_campus_dris','approved_by_guides']
-  loop
-    insert into approvals (project_id, stage) values (new_id, stage);
-  end loop;
-  insert into change_log (table_name, row_id, field, new_value, changed_by)
-  values ('projects', new_id, 'created', fields->>'slug', p_changed_by);
-  return jsonb_build_object('id', new_id, 'slug', fields->>'slug');
-end $$;
-revoke execute on function create_project(jsonb, text) from public, anon;
-grant execute on function create_project(jsonb, text) to service_role;
+update brainlift set insight = 'Every course must answer six questions (the parent/customer summary is these answers rephrased in parent language): subject+grades covered; which 3rd-party standards it covers AND does not cover; the parent-recognizable standardized test passed at what threshold on completing the course(s) and their mastery gates; the entry mastery gate and threshold; XP hours to complete (median / knows-it-all / knows-nothing entrant, XP per focused minute, whether XP is farmable); and which students it works for — named Alpha students with 1-2 week falsifiable hypotheses.' where ord = 9;
+-- Six-questions part 2: RPCs, gaps view, AI review with renumbering +
+-- AI-guess convention ("[AI guess — verify] ..." counts as answered but is
+-- listed for owner verification, never silently trusted).
 
 create or replace function update_project(p_slug text, fields jsonb, p_changed_by text)
 returns jsonb language plpgsql security definer as $$
@@ -83,6 +40,7 @@ begin
     quantified_outcomes  = coalesce(fields->>'quantified_outcomes', quantified_outcomes),
     xp                   = coalesce(fields->>'xp', xp),
     parent_summary       = coalesce(fields->>'parent_summary', parent_summary),
+    standards_covered    = coalesce(fields->>'standards_covered', standards_covered),
     passes_test          = coalesce(fields->>'passes_test', passes_test),
     entry_gate           = coalesce(fields->>'entry_gate', entry_gate),
     xp_hours             = coalesce(fields->>'xp_hours', xp_hours),
@@ -109,7 +67,7 @@ select
   po.name as owner, ps.name as sponsor,
   p.deliverable, p.main_course_sequence, p.replaces, p.hole_filling,
   p.quantified_outcomes, p.xp, p.parent_summary,
-  p.passes_test, p.entry_gate, p.xp_hours, p.effective_for,
+  p.standards_covered, p.passes_test, p.entry_gate, p.xp_hours, p.effective_for,
   p.needs_supplements, p.contains_supplements, p.supplements_notes,
   p.release_date, p.bottleneck, p.notes, p.updated_at,
   (select a.stage from approvals a
@@ -129,10 +87,11 @@ select
   s.slug, s.name, s.owner, s.sponsor, s.subject,
   array_remove(array[
     case when s.parent_summary is null then 'parent_summary (FIRST requirement)' end,
-    case when s.passes_test is null then 'passes_test (Q2)' end,
-    case when s.entry_gate is null then 'entry_gate (Q3)' end,
-    case when s.xp_hours is null then 'xp_hours (Q4)' end,
-    case when s.effective_for is null then 'effective_for (Q5)' end,
+    case when s.standards_covered is null then 'standards_covered (Q2)' end,
+    case when s.passes_test is null then 'passes_test (Q3)' end,
+    case when s.entry_gate is null then 'entry_gate (Q4)' end,
+    case when s.xp_hours is null then 'xp_hours (Q5)' end,
+    case when s.effective_for is null then 'effective_for (Q6)' end,
     case when s.owner   is null then 'owner' end,
     case when s.sponsor is null then 'sponsor' end,
     case when s.subject is null then 'subject' end,
@@ -146,7 +105,17 @@ select
     case when s.xp is null then 'xp' end,
     case when s.release_date is null then 'release_date' end,
     case when s.bottleneck is null then 'bottleneck' end
-  ], null) as missing_fields
+  ], null) as missing_fields,
+  array_remove(array[
+    case when s.parent_summary    like '[AI guess%' then 'parent_summary' end,
+    case when s.standards_covered like '[AI guess%' then 'standards_covered' end,
+    case when s.passes_test       like '[AI guess%' then 'passes_test' end,
+    case when s.entry_gate        like '[AI guess%' then 'entry_gate' end,
+    case when s.xp_hours          like '[AI guess%' then 'xp_hours' end,
+    case when s.effective_for     like '[AI guess%' then 'effective_for' end,
+    case when s.quantified_outcomes like '[AI guess%' then 'quantified_outcomes' end,
+    case when s.replaces          like '[AI guess%' then 'replaces' end
+  ], null) as ai_guessed_fields
 from project_status s;
 
 create view sy2026_27_changes as
@@ -159,6 +128,7 @@ returns jsonb language plpgsql security definer as $$
 declare
   p record;
   missing text[] := '{}';
+  guessed text[] := '{}';
   jargon text[] := '{}';
   term text;
   verdict text;
@@ -169,18 +139,19 @@ begin
     return jsonb_build_object('error', 'no project with slug ' || p_slug);
   end if;
 
-  -- The five questions, structured (Q1 = subject + grades).
+  -- The six questions, structured (Q1 = subject + grades).
   if p.subject is null then missing := array_append(missing, 'Q1: subject'::text); end if;
   if p.grade_min is null or p.grade_max is null then missing := array_append(missing, 'Q1: grade range'::text); end if;
-  if p.passes_test is null then missing := array_append(missing, 'Q2 unanswered: what parent-recognizable standardized test will students pass, at what threshold?'::text); end if;
-  if p.entry_gate is null then missing := array_append(missing, 'Q3 unanswered: what mastery gate at what threshold to start?'::text); end if;
-  if p.xp_hours is null then missing := array_append(missing, 'Q4 unanswered: XP hours (median / knows-all / knows-nothing), XP per focused minute, farmability'::text); end if;
-  if p.xp_hours is not null and p.xp_hours !~ '\d' then missing := array_append(missing, 'Q4 has no numbers'::text); end if;
-  if p.effective_for is null then missing := array_append(missing, 'Q5 unanswered: which students, incl. named Alpha students with 1-2 week falsifiable hypotheses'::text); end if;
+  if p.standards_covered is null then missing := array_append(missing, 'Q2 unanswered: what 3rd-party standards does it cover — and NOT cover?'::text); end if;
+  if p.passes_test is null then missing := array_append(missing, 'Q3 unanswered: what parent-recognizable standardized test will students pass, at what threshold?'::text); end if;
+  if p.entry_gate is null then missing := array_append(missing, 'Q4 unanswered: what mastery gate at what threshold to start?'::text); end if;
+  if p.xp_hours is null then missing := array_append(missing, 'Q5 unanswered: XP hours (median / knows-all / knows-nothing), XP per focused minute, farmability'::text); end if;
+  if p.xp_hours is not null and p.xp_hours !~ '\d' then missing := array_append(missing, 'Q5 has no numbers'::text); end if;
+  if p.effective_for is null then missing := array_append(missing, 'Q6 unanswered: which students, incl. named Alpha students with 1-2 week falsifiable hypotheses'::text); end if;
 
-  -- FIRST requirement: the parent-language rephrasing of that structure.
+  -- FIRST requirement: the parent-language rephrasing of the structure.
   if p.parent_summary is null then
-    missing := array_append(missing, 'parent_summary — the FIRST requirement: rephrase the five answers in plain parent language (Scribble is the register)'::text);
+    missing := array_append(missing, 'parent_summary — the FIRST requirement: rephrase the six answers in plain parent language (Scribble is the register)'::text);
   else
     foreach term in array array['HMG','hole-filling','hole filling','PowerPath','QTI','OneRoster','sourcedId','app-stack','ALI'] loop
       if p.parent_summary ilike '%' || term || '%' then
@@ -192,7 +163,6 @@ begin
     end if;
   end if;
 
-  -- The rest of the plan.
   if p.owner_id is null then missing := array_append(missing, 'owner'::text); end if;
   if p.sponsor_id is null then missing := array_append(missing, 'sponsor'::text); end if;
   if p.main_course_sequence is null then missing := array_append(missing, 'main_course_sequence'::text); end if;
@@ -208,12 +178,24 @@ begin
   if p.release_date is null then missing := array_append(missing, 'release_date'::text); end if;
   if p.bottleneck is null then missing := array_append(missing, 'bottleneck'::text); end if;
 
-  if cardinality(missing) = 0 then
+  -- AI-prefilled answers count as answered but must be verified by the owner
+  -- before the plan can pass.
+  foreach term in array array['standards_covered','passes_test','entry_gate','xp_hours','effective_for','parent_summary','quantified_outcomes','replaces'] loop
+    if (to_jsonb(p)->>term) like '[AI guess%' then guessed := array_append(guessed, term); end if;
+  end loop;
+
+  if cardinality(missing) = 0 and cardinality(guessed) = 0 then
     verdict := 'approved';
-    feedback := 'Plan complete: five questions answered in structure, parent summary rephrases them cleanly, outcomes quantified.';
+    feedback := 'Plan complete: six questions answered, parent summary rephrases them cleanly, outcomes quantified, no unverified AI guesses.';
+  elsif cardinality(missing) = 0 then
+    verdict := 'rejected';
+    feedback := 'Owner must verify the AI-guessed answers (edit or remove the [AI guess — verify] prefix): ' || array_to_string(guessed, ', ');
   else
     verdict := 'rejected';
     feedback := 'Fix and re-run the AI review: ' || array_to_string(missing, '; ');
+    if cardinality(guessed) > 0 then
+      feedback := feedback || '. Also verify AI-guessed: ' || array_to_string(guessed, ', ');
+    end if;
   end if;
 
   update approvals set status = verdict,
