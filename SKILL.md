@@ -100,6 +100,20 @@ node scripts/update.mjs request --as "who-you-are" --text "what should improve"
   "run AI review" button) computes approve/reject from the plan data itself
   and writes the gap list as feedback. `release_date` = the owner's
   prediction of all-approved, in students' hands.
+- **One project = one block of courses.** A project row is a subject + a
+  grade RANGE (`grade_min`–`grade_max`), not a single course — Math Quest is
+  one row spanning K–2 even though it delivers three courses incrementally.
+  The per-grade courses hang off the row via `app_stack.project_slug` (one
+  project ↔ many subject×grade cells). External systems know the same
+  initiative under other names (Worksmart, vendor branding, email threads);
+  those belong in `projects.aliases`, NEVER in a new row. Before creating a
+  project, check the name against existing names, slugs, and aliases —
+  `create_project` rejects matches and tells you which row to extend.
+- Unshipped projects get **prediction framing**: `passes_test` and
+  `parent_summary` state what WILL happen when the course is in students'
+  hands ("Prediction: … pass the state end-of-course test at 90%+ first
+  attempt"), with pilot evidence cited as support — never phrased as if the
+  outcome were already measured at scale.
 
 ## The loops (already running — don't duplicate them)
 
