@@ -58,11 +58,17 @@ switch (cmd) {
     }));
     break;
   }
+  case 'ai-review': {
+    const slug = args[1];
+    if (!slug) { console.error('usage: ai-review <slug> --as <who>'); process.exit(1); }
+    out(await rpc('ai_review_project', { p_slug: slug, p_changed_by: changedBy }));
+    break;
+  }
   case 'person': {
     out(await rpc('upsert_person', { p_name: flag('name'), p_email: flag('email') ?? null, p_team: flag('team') ?? null, p_changed_by: changedBy }));
     break;
   }
   default:
-    console.error('commands: create | set <slug> | decide <slug> <stage> <status> | person | request');
+    console.error('commands: create | set <slug> | decide <slug> <stage> <status> | ai-review <slug> | person | request');
     process.exit(1);
 }

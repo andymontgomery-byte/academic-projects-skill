@@ -86,9 +86,13 @@ node scripts/update.mjs request --as "who-you-are" --text "what should improve"
   farmability; which named students it works for, each with a 1-2 week
   falsifiable hypothesis). Canonical: Workflowy `#/929b0e407c72`; also
   brainlift row 9.
-- Approval stages, in order: plan_approved_by_ai →
-  approved_by_learning_science → ready_for_students → approved_by_andy →
-  approved_by_campus_dris → approved_by_guides. `release_date` = the owner's
+- Approval stages are a **strict sequence** (enforced in the database):
+  plan_approved_by_ai → approved_by_learning_science → ready_for_students →
+  approved_by_andy → approved_by_campus_dris → approved_by_guides. A stage
+  can only be decided when every earlier stage is approved. **Stage 1 is
+  never a human decision** — `update.mjs ai-review <slug>` (or the UI's
+  "run AI review" button) computes approve/reject from the plan data itself
+  and writes the gap list as feedback. `release_date` = the owner's
   prediction of all-approved, in students' hands.
 
 ## The loops (already running — don't duplicate them)
