@@ -47,8 +47,14 @@ function projectBlock(p) {
 const sections = [];
 
 if (mode === 'changes') {
-  const qualifying = (board.changes ?? []).filter((c) =>
-    !String(c.changed_by ?? '').startsWith('seed-import') && c.changed_by !== 'academic-projects-loop');
+  // Excluded actors: seed imports, the loop itself, schema migrations
+  // (stamped 'migration:'), and 'unknown' (only raw maintenance SQL bypasses
+  // the attributed RPCs — never an owner-relevant change).
+  const qualifying = (board.changes ?? []).filter((c) => {
+    const by = String(c.changed_by ?? 'unknown');
+    return !by.startsWith('seed-import') && !by.startsWith('migration:')
+      && by !== 'academic-projects-loop' && by !== 'unknown';
+  });
   const byProject = new Map();
   for (const c of qualifying) {
     const p = byId.get(c.row_id);
