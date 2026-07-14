@@ -44,7 +44,8 @@ insert into brainlift (ord, insight, source) values
 (5, 'This is a raw data source, not a translated one. Frontier AI reasons under uncertainty with incomplete data better than any human — hand the calling LLM pure data, never interpretation layered on top.', 'Data Source Skills (old AI-PI)'),
 (6, 'The current production course sequence (what "now" means, and what projects replace) is live at https://timeback-loops-k8.vercel.app/course-sequence.', 'course-sequence grid'),
 (7, 'Approval flow, in order: plan_approved_by_ai → approved_by_learning_science → ready_for_students (owner) → approved_by_andy → approved_by_campus_dris → approved_by_guides. release_date is the owner''s prediction of all-approved.', 'Workflowy spec 78e12cec072f'),
-(8, 'Improve me: file improvement_requests rows (any calling LLM or human can). They are stack-ranked and worked as the data source''s own improvement loop.', 'Data Source Skills (old AI-PI)');
+(8, 'Improve me: file improvement_requests rows (any calling LLM or human can). They are stack-ranked and worked as the data source''s own improvement loop.', 'Data Source Skills (old AI-PI)'),
+(9, 'Every course must answer five questions (the parent/customer summary is these answers in prose): subject+grades covered; the parent-recognizable standardized test passed at what threshold on completion; the entry mastery gate and threshold; XP hours to complete (median / knows-it-all / knows-nothing entrant, XP per focused minute, whether XP is farmable); and which students it works for — named Alpha students with 1-2 week falsifiable hypotheses.', 'Questions every course needs to answer — WF 82041e9b (BrainLifts, Academics Root)');
 
 create table if not exists improvement_requests (
   id           uuid primary key default gen_random_uuid(),
