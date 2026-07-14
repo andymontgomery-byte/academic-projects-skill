@@ -3,7 +3,9 @@
 //
 //   node scripts/ask.mjs status                 # all projects + current state
 //   node scripts/ask.mjs gaps                   # missing fields per project (the point)
-//   node scripts/ask.mjs north-star             # SY 2026-27 Aug-1 changes
+//   node scripts/ask.mjs current-sequence       # what students get TODAY (live PowerPath)
+//   node scripts/ask.mjs north-star             # SY 2026-27 Aug-1 changes, ranked
+//   node scripts/ask.mjs barriers               # who/what is blocking better outcomes
 //   node scripts/ask.mjs stack [subject]        # app-stack matrix (old/now/next)
 //   node scripts/ask.mjs stack-changes          # now→next diff per cell
 //   node scripts/ask.mjs dictionary             # the data dictionary
@@ -25,11 +27,90 @@ switch (cmd) {
     out(await rest('/project_gaps?select=*'));
     break;
   case 'north-star': {
-    // Both halves of the answer: projects predicting an Aug-1 release, and
-    // the per-cell now→next app-stack changes.
-    const projects = await rest('/sy2026_27_changes?select=*');
+    // The Aug-1 answer, ranked. Every project touching the next-year stack,
+    // ordered by learning-outcome impact evidence: quantified outcomes first
+    // (they made a measurable promise), then Aug-1-committed release dates,
+    // then the rest. Each row carries its parent pitch (parent_summary) or
+    // names that gap + its owner — the lack of data IS part of the answer.
+    const projects = await rest('/project_status?select=*');
     const stackChanges = await rest('/stack_changes?select=*');
-    out({ projects, stackChanges });
+    const impactRank = (p) => {
+      let r = 0;
+      if (p.quantified_outcomes && /\d/.test(p.quantified_outcomes)) r += 2;
+      if (p.release_date && p.release_date <= '2026-08-01') r += 1;
+      return r;
+    };
+    const ranked = projects
+      .map((p) => ({
+        slug: p.slug, name: p.name, subject: p.subject,
+        grades: `${p.grade_min}-${p.grade_max}`,
+        owner: p.owner, sponsor: p.sponsor,
+        replaces: p.replaces,
+        release_date: p.release_date,
+        on_track_for_aug1: p.release_date ? p.release_date <= '2026-08-01' : null,
+        current_state: p.current_state ?? 'no approvals yet',
+        quantified_outcomes: p.quantified_outcomes ?? '(gap — impact not quantified; owner: ' + (p.owner ?? 'UNCLAIMED') + ')',
+        parent_pitch: p.parent_summary ?? '(gap — no parent summary yet; owner: ' + (p.owner ?? 'UNCLAIMED') + ')',
+        impact_rank: impactRank(p),
+      }))
+      .sort((a, b) => b.impact_rank - a.impact_rank || a.subject?.localeCompare(b.subject ?? '') || 0);
+    out({
+      question: 'What are the changes to the course sequence for the 2026-2027 school year ready for students on August 1st?',
+      how_ranked: 'impact_rank: +2 quantified learning-outcome promise on file, +1 release date committed <= Aug 1. Ties by subject. Gaps are named, not hidden.',
+      projects: ranked,
+      per_cell_stack_changes: stackChanges,
+    });
+    break;
+  }
+  case 'current-sequence': {
+    // What students get TODAY: the live PowerPath sequence (courses,
+    // mastery gates, hole-filling apps) served by the production dashboard.
+    const r = await fetch('https://timeback-loops-k8.vercel.app/api/course-sequence');
+    if (!r.ok) throw new Error(`course-sequence API ${r.status}`);
+    out(await r.json());
+    break;
+  }
+  case 'barriers': {
+    // Who/what is blocking better learning outcomes by Aug 1: per project,
+    // the approval stages still pending (with how long the project has sat),
+    // the owner on the hook, and their stated bottleneck.
+    const projects = await rest('/project_status?select=*');
+    const approvals = await rest('/approvals?select=project_id,stage,status,decided_by,decided_at');
+    const byProject = new Map();
+    for (const a of approvals) {
+      if (!byProject.has(a.project_id)) byProject.set(a.project_id, []);
+      byProject.get(a.project_id).push(a);
+    }
+    const STAGE_ORDER = ['plan_approved_by_ai', 'approved_by_learning_science', 'ready_for_students', 'approved_by_andy', 'approved_by_campus_dris', 'approved_by_guides'];
+    const rows = projects.map((p) => {
+      const appr = byProject.get(p.id) ?? [];
+      const pending = STAGE_ORDER.filter((s) => (appr.find((a) => a.stage === s)?.status ?? 'pending') === 'pending');
+      const rejected = appr.filter((a) => a.status === 'rejected').map((a) => `${a.stage} (by ${a.decided_by})`);
+      const nextStage = pending[0] ?? null;
+      // Who moves the next stage: AI plan → owner submits a complete plan;
+      // LS → sponsor; owner-ready → owner; then Andy / campus DRIs / guides.
+      const mover = nextStage === 'plan_approved_by_ai' ? (p.owner ?? 'UNCLAIMED (no owner)')
+        : nextStage === 'approved_by_learning_science' ? (p.sponsor ?? `sponsor UNASSIGNED (owner: ${p.owner ?? 'UNCLAIMED'})`)
+        : nextStage === 'ready_for_students' ? (p.owner ?? 'UNCLAIMED')
+        : nextStage === 'approved_by_andy' ? 'Andy'
+        : nextStage === 'approved_by_campus_dris' ? 'campus DRIs'
+        : nextStage === 'approved_by_guides' ? 'guides' : null;
+      return {
+        slug: p.slug, name: p.name, subject: p.subject,
+        owner: p.owner ?? 'UNCLAIMED', sponsor: p.sponsor ?? 'UNASSIGNED',
+        stages_approved: p.stages_approved, stages_pending: pending.length,
+        next_stage: nextStage, stuck_on: mover,
+        rejected_stages: rejected.length ? rejected : undefined,
+        stated_bottleneck: p.bottleneck ?? '(gap — bottleneck question unanswered)',
+        release_date: p.release_date ?? '(gap — no committed date)',
+        notes: p.notes ?? undefined,
+      };
+    }).sort((a, b) => a.stages_approved - b.stages_approved);
+    out({
+      question: 'What are the biggest barriers to better learning outcomes by Aug 1 — who is struggling to get through the approvals?',
+      reading: 'Everything below next_stage is waiting on stuck_on. UNCLAIMED owner or UNASSIGNED sponsor is itself the barrier. stated_bottleneck is the owner’s own magic-wand answer.',
+      projects: rows,
+    });
     break;
   }
   case 'stack':
@@ -66,6 +147,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.error('commands: status | gaps | north-star | stack [subject] | stack-changes | dictionary | brainlift | improvements | people | log [slug] | project <slug>');
+    console.error('commands: status | gaps | current-sequence | north-star | barriers | stack [subject] | stack-changes | dictionary | brainlift | improvements | people | log [slug] | project <slug>');
     process.exit(1);
 }

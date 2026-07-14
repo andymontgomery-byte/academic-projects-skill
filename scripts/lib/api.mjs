@@ -1,12 +1,18 @@
-// Connection helper. Resolution order: explicit env vars, then the local
-// key file (~/.academic-projects-skill/api-keys.json, as written by
-// `supabase projects api-keys -o json`). Never print key contents.
+// Connection helper. Reads work with zero configuration: the anon key below
+// is bundled on purpose — it is a public-by-design Supabase key whose RLS
+// grants SELECT on everything plus INSERT on improvement_requests, nothing
+// else. Writes require the service key (env var or the local key file);
+// never print key contents.
 
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 
 export const SUPABASE_URL = process.env.ACADEMIC_PROJECTS_URL
   ?? 'https://jigpfagovaueekufildm.supabase.co';
+
+// anon (read-only) key — safe to ship; see header comment.
+const PUBLIC_READ_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZ3BmYWdvdmF1ZWVrdWZpbGRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5NzU4MDUsImV4cCI6MjA5OTU1MTgwNX0.zsttvvdJ2aXyI3wkaGox7TZoKwhy6gwUoKLSkPDO0Lw';
 
 export function resolveKey({ write = false } = {}) {
   const envKey = write
@@ -19,10 +25,8 @@ export function resolveKey({ write = false } = {}) {
     const hit = keys.find((k) => k.name === name);
     if (hit) return hit.api_key;
   } catch { /* fall through */ }
-  throw new Error(
-    `No API key. Set ${write ? 'ACADEMIC_PROJECTS_SERVICE_KEY' : 'ACADEMIC_PROJECTS_KEY'} `
-    + 'or provide ~/.academic-projects-skill/api-keys.json',
-  );
+  if (!write) return PUBLIC_READ_KEY;
+  throw new Error('Writes need ACADEMIC_PROJECTS_SERVICE_KEY (or use the UI: https://timeback-loops-k8.vercel.app/academic-projects)');
 }
 
 export async function rest(path, { method = 'GET', body, write = false, headers = {} } = {}) {

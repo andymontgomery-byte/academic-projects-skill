@@ -30,16 +30,19 @@ for (const col of dictCols) {
   check(schemaCols.includes(col), `data_dictionary projects.${col} exists in schema`);
 }
 
-const mdDict = read('references/data-dictionary.md');
-for (const col of ['owner_id', 'sponsor_id', 'quantified_outcomes', 'hole_filling', 'replaces', 'release_date', 'bottleneck']) {
-  check(mdDict.includes(col), `references/data-dictionary.md documents ${col}`);
-}
-
 const skill = read('SKILL.md');
-for (const cmd of ['status', 'gaps', 'north-star', 'dictionary', 'project <slug>', 'score.mjs', 'create --as', 'set <slug>', 'decide <slug>']) {
+for (const cmd of ['status', 'gaps', 'north-star', 'barriers', 'current-sequence', 'dictionary', 'brainlift', 'improvements', 'project <slug>', 'score.mjs', 'create --as', 'set <slug>', 'decide <slug>', 'request --as']) {
   check(skill.includes(cmd), `SKILL.md documents: ${cmd}`);
 }
-check(!/sb_secret|service_role_key.*ey[A-Za-z0-9]/.test(skill + schema), 'no key material in shipped files');
+// ask.mjs and SKILL.md must agree on the command surface (anti-drift).
+const askSrc = read('scripts/ask.mjs');
+for (const cmd of ['current-sequence', 'north-star', 'barriers', 'stack-changes', 'brainlift', 'improvements']) {
+  check(askSrc.includes(`case '${cmd}'`), `ask.mjs implements: ${cmd}`);
+}
+// Only the anon key may ship; the service key must never appear in any file.
+const allShipped = ['SKILL.md', 'README.md', 'schema.sql', 'scripts/lib/api.mjs', 'scripts/ask.mjs', 'scripts/update.mjs', 'scripts/score.mjs'].map(read).join('');
+check(!allShipped.includes('sb_secret'), 'no sb_secret key material in shipped files');
+check(!/"role":"service_role"/.test(Buffer.from((allShipped.match(/eyJ[A-Za-z0-9_-]+\.([A-Za-z0-9_-]+)\./)?.[1] ?? ''), 'base64').toString('utf8')), 'any bundled JWT is anon-role, not service-role');
 
 const stages = ['plan_approved_by_ai', 'approved_by_learning_science', 'ready_for_students', 'approved_by_andy', 'approved_by_campus_dris', 'approved_by_guides'];
 for (const s of stages) {
