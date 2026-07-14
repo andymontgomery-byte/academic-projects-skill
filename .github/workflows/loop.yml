@@ -1,0 +1,43 @@
+# The durable reminder loop. Hourly: state-change alerts; 12:50 UTC daily:
+# the full per-person digest. Output lands as comments on the rolling
+# "Daily digests & alerts" issue — the durable, linkable record. Gmail-draft
+# delivery of the same content is handled by the interactive-session cron
+# (Google's Gmail MCP is unavailable to headless runs); the cloud routine
+# handles the feedback→PR loop. One job per rail.
+name: loop
+on:
+  schedule:
+    - cron: '20 * * * *'   # hourly, off the :00 stampede — state changes
+    - cron: '50 12 * * *'  # 12:50 UTC = 8:50am ET — daily digest
+  workflow_dispatch: {}
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Compose and post
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          HOUR=$(date -u +%H%M)
+          if [ "$HOUR" -ge 1245 ] && [ "$HOUR" -le 1315 ]; then MODE=digest; ARG=""; else MODE=changes; ARG=75; fi
+          node scripts/loop/remind.mjs $MODE $ARG > /tmp/out.json
+          COUNT=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/out.json','utf8')).sections.length)")
+          # changes mode with nothing qualifying → quiet run, no comment
+          if [ "$MODE" = "changes" ] && [ "$COUNT" -le 0 ]; then echo "no qualifying changes"; exit 0; fi
+          node -e "
+            const j = JSON.parse(require('fs').readFileSync('/tmp/out.json','utf8'));
+            const lines = ['## ' + (j.mode === 'digest' ? 'Daily digest' : 'State-change alerts') + ' — ' + new Date().toISOString(), ''];
+            for (const s of j.sections) {
+              lines.push('### → ' + s.to + (s.cc ? ' (cc ' + s.cc + ')' : ''), '**' + s.subject + '**', '', '\`\`\`', s.body, '\`\`\`', '');
+            }
+            require('fs').writeFileSync('/tmp/comment.md', lines.join('\n'));
+          "
+          gh issue comment 1 --repo "$GITHUB_REPOSITORY" --body-file /tmp/comment.md
