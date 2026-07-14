@@ -9,7 +9,12 @@ on:
   schedule:
     - cron: '20 * * * *'   # hourly, off the :00 stampede — state changes
     - cron: '50 12 * * *'  # 12:50 UTC = 8:50am ET — daily digest
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: force a mode (digest | changes); empty = derive from clock
+        required: false
+        default: ''
 
 permissions:
   issues: write
@@ -27,7 +32,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           HOUR=$(date -u +%H%M)
-          if [ "$HOUR" -ge 1245 ] && [ "$HOUR" -le 1315 ]; then MODE=digest; ARG=""; else MODE=changes; ARG=75; fi
+          if [ -n "${{ inputs.mode }}" ]; then MODE="${{ inputs.mode }}"; ARG=75;
+          elif [ "$HOUR" -ge 1245 ] && [ "$HOUR" -le 1315 ]; then MODE=digest; ARG="";
+          else MODE=changes; ARG=75; fi
           node scripts/loop/remind.mjs $MODE $ARG > /tmp/out.json
           COUNT=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/out.json','utf8')).sections.length)")
           # changes mode with nothing qualifying → quiet run, no comment
