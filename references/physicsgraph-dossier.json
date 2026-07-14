@@ -1,0 +1,297 @@
+{
+  "timeline": [
+    {
+      "date": "2026-01-12",
+      "event": "Chris Sutherland (CEO, PhysicsGraph) pitches expansion packages: AP Physics 2 ($100K), + Physics C ($200K), + AP Chemistry ($300K), AP Calc add-on (+$200K); 20% early-sign bonus if signed by 2026-02-28.",
+      "source_thread": "19bb306485ef61f4"
+    },
+    {
+      "date": "2026-01-14",
+      "event": "Andy declines Physics 2/C ('There isn't very much market'); sets priorities: Becky's feedback, 'Are you ready for AP Physics' assessment bank, HS Physics bridge course, AP Chemistry stack; asks for deeper TimeBack integration (upgraded Caliper events, QTI store); MathAcademy keeps AP Calc.",
+      "source_thread": "19bb306485ef61f4"
+    },
+    {
+      "date": "2026-01-15",
+      "event": "Chris proposes second contract: $450K total ($360K with 20% discount if signed by Feb 28); Andy accepts contingent on an equal license credit; Chris: 'Deal.'",
+      "source_thread": "19bb306485ef61f4"
+    },
+    {
+      "date": "2026-01-19",
+      "event": "Nodeledge-TimeBack integration approved by Joe on 'a somewhat similar model to PhysicsGraph and Mentava' ($30/student/month first 100, $25 above).",
+      "source_thread": "19bd6e74ac3e3af1"
+    },
+    {
+      "date": "2026-01-20",
+      "event": "Joe catches pricing error; deal corrected to $360K including $360K worth of licenses if signed by 2026-02-28; Chris adjusts contract doc.",
+      "source_thread": "19bb306485ef61f4"
+    },
+    {
+      "date": "2026-01-22",
+      "event": "Andy asks what AP physics students use; Eric Nelson corrects himself: students (Jackson Price, Jeremy Wang, Sara Beth Way, Cruce Saunders, Austin Way) are on Crush AP, since fall, earning XP manually via Abby; Eric had thought PhysicsGraph better from demos and will re-check quality.",
+      "source_thread": "19be673f03277a85"
+    },
+    {
+      "date": "2026-01-23",
+      "event": "Andy approves Crush AP on Timeback (referenced in Jan 24 update: 'Crush AP is On Timeback (Andy approved 1/23)').",
+      "source_thread": "19bef793009f8170"
+    },
+    {
+      "date": "2026-01-24",
+      "event": "Crush AP update to Joe: 5 juniors using the app daily, 30% of AP Physics 1 complete, average AP Mastery score 4/5, students signed up for the May 6 AP Physics 1 exam; claims learning scientists deemed Crush AP better than PhysicsGraph.",
+      "source_thread": "19bef793009f8170"
+    },
+    {
+      "date": "2026-01-26",
+      "event": "Joe orders the Crush AP students to take the equivalent PhysicsGraph units ('Let me know if they don't get 100%'); Option A chosen (redo same units, pausing Crush). Andy separately notes the Crush AP team + Abby bypassed the academics team meeting and his approval.",
+      "source_thread": "19bef793009f8170"
+    },
+    {
+      "date": "2026-01-29",
+      "event": "Students start PhysicsGraph comparison. David VanStory explains why only 2 of the Crush students scored 5s: mastery system not strict enough, equation fluency under-drilled, instruction not granular enough (over-reliance on video).",
+      "source_thread": "19bef7bc1aff054c"
+    },
+    {
+      "date": "2026-02-02",
+      "event": "4/4 students say they prefer Crush AP; Jackson finished PhysicsGraph Unit 1 in one day (3.5 hrs); students got full XP for 98% of completed lessons. Becky Allen delivers written PhysicsGraph feedback via Workflowy link.",
+      "source_thread": "19bef793009f8170"
+    },
+    {
+      "date": "2026-02-07",
+      "event": "PhysicsGraph study results: 4/4 students completed PG Unit 1 (32 lessons), all above 80% (avg 88% accuracy), avg 35% faster than PG baseline; game film shows 100% accuracy with all explanations skipped (7-min lesson in ~1:30); PG has no AP mastery gate on any unit.",
+      "source_thread": "19c39671089b7e2b"
+    },
+    {
+      "date": "2026-02-09",
+      "event": "Joe approves students returning to Crush AP ('North Star is to get these students 5s on the AP exam in 90 days'). Same day, PhysicsGraph submits Milestone 4 (final) of Contract 1 to Shane Merritt, and contract-2 drafting kicks off with Trilogy (Arthur, Donnie, Shane).",
+      "source_thread": "19bb306485ef61f4"
+    },
+    {
+      "date": "2026-02-11",
+      "event": "Shane Merritt asks who the new PhysicsGraph DRI is after Pritish's departure; Andy answers by tagging Eric Nelson.",
+      "source_thread": "19c4d5cba731b28d"
+    },
+    {
+      "date": "2026-02-13",
+      "event": "Andy sets bridge-course scope: 'whatever is in a HS physics class should be in the course' and 'yes, evaluate for math readiness.' Tells Patrick Skinner PhysicsGraph is building HS science courses, entry tests, and 'integrating deeply with timeback' independently of CrushAP.",
+      "source_thread": "19c591532f1b3798"
+    },
+    {
+      "date": "2026-02-20",
+      "event": "Milestone 4 deliverables presented; Andy gives quick approval. Chris: contract 1 considered complete if no feedback by end of next week. Eric: 'Our HS team will do a deep dive and we will report back to Andy next week.' Andy tells Becky 'physics course complete.'",
+      "source_thread": "19c7be6dfb1ab933"
+    },
+    {
+      "date": "2026-02-27",
+      "event": "Eric Nelson delivers PhysicsGraph pros/cons review (strong mastery enforcement, 32 FRQs + 3 practice exams, readiness gating vs FRQ difficulty jump, UI/grading issues). Alixandria (Science DRI) just got Crush Physics access; comparison pending.",
+      "source_thread": "19ca01e1c0f0b78c"
+    },
+    {
+      "date": "2026-03-02",
+      "event": "Chris asks for Milestone 4 payment release; escalates that payment is stuck without contract-1 delivery sign-off. Andy defers to Shane ('your call'); Shane: 'Got it, I'll take care of this.' Andy designates Becky Allen as the single feedback source for PhysicsGraph.",
+      "source_thread": "19caf1ad8b6ff8f3"
+    },
+    {
+      "date": "2026-03-06",
+      "event": "Becky Allen reviews two upgraded Unit-4 lessons: 'a clear step forward' — February structural feedback implemented well; refinements only. Chris: PhysicsGraph will apply similar changes to the rest of the course.",
+      "source_thread": "19cc356da3d7d5e6"
+    },
+    {
+      "date": "2026-03-18",
+      "event": "Andy: all HS AP Physics students ('they are all on your course Crush AP course') will take a midterm AP practice test; asks Crush team to predict per-student MCQ/FRQ/AP-scale scores. Test set for Mar 20; students ~70% through instruction, ~400 AP questions drilled by Apr 17.",
+      "source_thread": "19bef793009f8170"
+    }
+  ],
+  "contracts": [
+    {
+      "name": "Contract 1 — AP Physics 1 (PhysicsGraph/Lemnisket)",
+      "milestones": "4 milestones, each delivered in roughly 30 days from signing. Milestone 3 (course standards) approved around New Years; Milestone 4 (full course: end-of-unit FRQs + 3 full-length practice tests + topic mapping to AP curriculum) submitted 2026-02-09, presented and approved by Andy 2026-02-20.",
+      "status": "Delivered and approved (Andy quick-approved M4 on 2026-02-20; Andy told Becky 'physics course complete'). M4 payment release was stuck awaiting formal delivery sign-off until 2026-03-02, when Shane Merritt took ownership of releasing it.",
+      "dates": "M3 approved ~2026-01-01 ('around New Years'); M4 submitted 2026-02-09; M4 approved 2026-02-20; payment escalation resolved to Shane 2026-03-02."
+    },
+    {
+      "name": "Contract 2 — HS/AP science expansion (PhysicsGraph/Lemnisket)",
+      "milestones": "Scope: AP Physics readiness assessment ($25K), HS Physics bridge course + readiness assessment ($100K), HS Chem bridge course + readiness assessment ($100K), AP Chemistry + readiness assessment ($200K), TimeBack integration upgrades — Caliper events + QTI store ($25K). AP Physics 1 upgrades per Becky's feedback included. Payments 25% at signing, 25% May 2026 (AP Physics readiness assessment, AP Physics 1 fully upgraded, HS Physics readiness assessment, half of HS Physics bridge course), 25% Aug 2026 (finished HS Physics bridge course, HS Chem readiness + full bridge course, upgraded Caliper events), 25% Dec 2026 (AP Chem readiness + full course, Caliper + QTI store).",
+      "status": "Agreed in principle 2026-01-15/20 at $360K including $360K worth of licenses (discount contingent on signing by 2026-02-28); Trilogy (Donnie/Arthur/Shane) drafting since 2026-02-09. As of 2026-03-02 still being 'hashed out' — not confirmed signed in these threads. PhysicsGraph already doing the work (unit-4 upgrade reviewed by Becky 2026-03-06).",
+      "dates": "Proposed 2026-01-15; price corrected 2026-01-20; sign-by-discount deadline 2026-02-28; still unsigned as of 2026-03-02."
+    }
+  ],
+  "quantified_results": [
+    {
+      "claim": "Crush AP students' curriculum progress and mastery (Jan 24)",
+      "numbers": "5 juniors daily; 30% of AP Physics 1 complete; average AP Mastery score 4/5; AP exam May 6",
+      "source": "They have completed 30% AP Physics 1 curriculum. Average AP Mastery score is 4/5. Students have signed up for AP Physics 1 Exam May 6."
+    },
+    {
+      "claim": "Crush AP mastery-test outcomes (Jan 29)",
+      "numbers": "2 of the students scored a 5; 2 others improved 3 -> 4 between Unit 1 and Unit 2; Units 1-4 = ~60-70% of AP Physics content",
+      "source": "In the last mastery test, two students scored 5 (i think the data I presented mistakenly only showed one). Additionally, 2 others have improved their score from a 3 to a 4 from Unit 1 to Unit 2."
+    },
+    {
+      "claim": "PhysicsGraph comparison study by Crush-trained students (Feb 7)",
+      "numbers": "4/4 completed PG Unit 1 (32 lessons); 4/4 scored above 80%; avg 35% time saved vs PG baseline",
+      "source": "4/4 students completed Physics Graph Unit 1 (32 Lessons) - 4/4 students scored above 80% - 4/4 students completed faster than Physics Graph baseline time (avg 35% time saved)"
+    },
+    {
+      "claim": "Average accuracy in the PhysicsGraph study",
+      "numbers": "88% average accuracy",
+      "source": "1. Students' accuracy scores. Avg 88%"
+    },
+    {
+      "claim": "PhysicsGraph lessons gameable by skipping instruction",
+      "numbers": "100% accuracy with all explanations skipped; 7-minute lesson done in ~1:30",
+      "source": "90s video of student using Physics Graph. All explanations skipped and still 100% accuracy. Expected time for lesson 7 minutes, actual time ~1:30s"
+    },
+    {
+      "claim": "PhysicsGraph has no AP mastery gate",
+      "numbers": "0 mastery gates across all units",
+      "source": "Physics Graph does not have an AP \"Mastery\" Gate for Unit 1, nor any other unit."
+    },
+    {
+      "claim": "Fastest student's pace through PhysicsGraph Unit 1 (Feb 2)",
+      "numbers": "Jackson: 100% in a single day, 3.5 hrs; Austin 50% in 1.5 hrs; Sara Beth 30% in 40 min; Jeremy 10% in 15 min; full XP for 98% of completed lessons",
+      "source": "Jackson did 100% in a single day, 3.5 hrs. Austin is 50% through after 1.5 hrs ... The students have got full XP for 98% the lessons they completed so far."
+    },
+    {
+      "claim": "AP-5 equivalence threshold used by Crush AP team",
+      "numbers": "Above 70% = 5; Crush mastery checkpoints require 80%",
+      "source": "Anything above 70 is 5."
+    },
+    {
+      "claim": "Crush AP exam-prep volume (Mar 19)",
+      "numbers": "~70% through instruction; ~400 AP questions incl. 2 full-length practice exams by Apr 17; goal 500 questions before exam day",
+      "source": "By April 17th, they will have drilled ~400 AP questions, including 2 full-length practice exams, in our app."
+    },
+    {
+      "claim": "PhysicsGraph Contract 1 deliverable scale",
+      "numbers": "32 end-of-unit FRQs (4/unit) + 12 practice-test FRQs + 3 full-length practice tests",
+      "source": "32 hand-crafted End of Unit FRQs (4 for each unit), + 12 FRQs as part of the practice tests (4 each), fully integrated with the mastery learning system."
+    },
+    {
+      "claim": "Andy's instruction-quality bar sent to PhysicsGraph",
+      "numbers": "5 checked interactions per minute",
+      "source": "better instruction at 5 checked interactions per minute."
+    }
+  ],
+  "integration_status": "PhysicsGraph is live on TimeBack today — 'Maintaining a flawless connection with Timeback' is a standing Contract 1 deliverable, and Andy told Patrick Skinner (2026-02-13) that PhysicsGraph is 'integrating deeply with timeback.' Deeper integration is a $25K line in Contract 2: upgraded Caliper events due at Milestone 3 (Aug 2026) and Caliper + storing content in TimeBack's QTI store due at Milestone 4 (Dec 2026). Andy flagged the ask on 2026-01-14: 'Upgrade caliper events, store content in TimeBack's QTI store.' Crush AP was separately approved on Timeback by Andy on 2026-01-23. A resale agreement with PhysicsGraph is deferred to ~July 2026 via Neeraj Gupta/Donnie Yee.",
+  "dri": {
+    "who": "Eric Nelson (eric.nelson@alpha.school); previously Pritish Chakravarty (departed). For learning-science feedback specifically, Andy designated Becky Allen as the single source on 2026-03-02.",
+    "since": "2026-02-11",
+    "evidence": "Shane Merritt: 'PhysicsGraph was working with Pritish prior to his departure. Is there a new DRI who should be looped in regarding PhysicsGraph for the upcoming contract?' Andy's reply: '@Eric Nelson <eric.nelson@alpha.school>'"
+  },
+  "ap_physics_2": "Pitched by Chris Sutherland on 2026-01-12 (Basic $100K AP Physics 2; Premier $200K adds both Physics C courses; $300K adds AP Chemistry). Andy declined on 2026-01-14: 'There isn't very much market for physics 2, physics Cs. I have more interest in AP Chem and the mastery tests and courses that bridge the gap between 8th grade and AP for physics and chemistry.' AP Physics 2 is NOT in Contract 2. Only incidental physics-2 material inside the HS Physics NGSS bridge course survives, per Andy (2026-02-13): 'whatever is in a HS physics class should be in the course.'",
+  "what_students_use_today": "Crush AP (Superbuilders), not PhysicsGraph. Latest evidence 2026-03-18, Andy to David VanStory: 'We are planning to give all the kids taking AP Physics in HS (they are all on your course Crush AP course) a midterm AP Physics practice test.' The cohort (Jackson Price, Jeremy Wang, Sara Beth Way, Cruce Saunders, Austin Way + later starters, ~8 students) has been on Crush AP since fall; they used PhysicsGraph only for Joe's one-week comparison study (2026-01-29 to 2026-02-09), after which Joe approved returning to Crush. PhysicsGraph's role today is contracted course development (AP Physics 1 delivered; HS bridge courses + AP Chem in Contract 2) with Becky Allen reviewing its learning-science upgrades.",
+  "open_blockers": [
+    {
+      "what": "Contract 1 Milestone 4 payment release — stuck pending a formal delivery sign-off despite Andy's 2026-02-20 approval; Shane Merritt took ownership 2026-03-02 but no confirmation of release appears in these threads.",
+      "since": "2026-02-09 (milestone submitted)",
+      "evidence": "Without someone's approval that we delivered on this first contract, it seems like this milestone and payment will remain stuck here until the first milestone deliverable of the second contract"
+    },
+    {
+      "what": "Contract 2 not signed — the $360K deal (with $360K license credit) had a sign-by 2026-02-28 discount deadline, but as of 2026-03-02 it was still being negotiated while PhysicsGraph does the work at risk.",
+      "since": "2026-02-28 (missed sign-by-discount date)",
+      "evidence": "We've gotten a bunch already, and we're in the process of implementing it all as we hash out the second contract."
+    },
+    {
+      "what": "PhysicsGraph has no AP mastery gates on any unit and lessons were gameable (explanations skippable with 100% accuracy, full XP for 98% of lessons) — raised by the Crush AP study; Contract 2 unit upgrades address instruction quality but no gate fix is confirmed in these threads.",
+      "since": "2026-02-07",
+      "evidence": "Physics Graph does not have an AP \"Mastery\" Gate for Unit 1, nor any other unit."
+    },
+    {
+      "what": "Alixandria Ali's Crush Physics vs PhysicsGraph comparison outstanding — she only got Crush access 2026-02-26.",
+      "since": "2026-02-27",
+      "evidence": "The Alixandria Science DRI just got access to Crush Physics yesterday. Will complete a comparison and report back."
+    }
+  ],
+  "people": [
+    {
+      "name": "Chris Sutherland",
+      "email": "chris@lemnisket.com",
+      "role": "CEO, PhysicsGraph — counterparty on both contracts"
+    },
+    {
+      "name": "Jeffrey Biles",
+      "email": "jeffrey@physicsgraph.com",
+      "role": "PhysicsGraph — co-drafted contract 2 proposal"
+    },
+    {
+      "name": "Andy Montgomery",
+      "email": "andy.montgomery@alpha.school",
+      "role": "Alpha School — decision maker on PhysicsGraph scope, pricing, and approvals"
+    },
+    {
+      "name": "Eric Nelson",
+      "email": "eric.nelson@alpha.school",
+      "role": "Alpha HS team — DRI for PhysicsGraph since 2026-02-11 (named by Andy); delivered pros/cons review"
+    },
+    {
+      "name": "Becky Allen",
+      "email": "becky.allen@alpha.school",
+      "role": "Senior Learning Scientist, Alpha School — designated single feedback source for PhysicsGraph upgrades (2026-03-02)"
+    },
+    {
+      "name": "Joe Liemandt",
+      "email": "joe.liemandt@alpha.school",
+      "role": "Alpha School — top-level approvals; ordered the Crush-vs-PhysicsGraph head-to-head study"
+    },
+    {
+      "name": "Shane Merritt",
+      "email": "shane.merritt@trilogy.com",
+      "role": "VP PMO, Trilogy — milestone/payment administration; owns M4 payment release"
+    },
+    {
+      "name": "Donnie Yee",
+      "email": "donnie.yee@trilogy.com",
+      "role": "Trilogy — contract drafting/negotiation (both PhysicsGraph contracts, Nodeledge)"
+    },
+    {
+      "name": "Arthur Michel",
+      "email": "arthur@trilogy.com",
+      "role": "Trilogy — final contract signature"
+    },
+    {
+      "name": "Neeraj Gupta",
+      "email": "neeraj.gupta@trilogy.com",
+      "role": "Trilogy — future PhysicsGraph resale agreement contact"
+    },
+    {
+      "name": "David VanStory",
+      "email": "david.vanstory@superbuilders.school",
+      "role": "Crush AP team lead, Superbuilders — competing AP Physics app used by the students"
+    },
+    {
+      "name": "Patrick Skinner",
+      "email": "patrick.skinner@superbuilders.school",
+      "role": "General Manager, Superbuilders"
+    },
+    {
+      "name": "Matthew Bagazinski",
+      "email": "matthew.bagazinski@superbuilders.school",
+      "role": "Crush AP team — produced practice-exam score predictions"
+    },
+    {
+      "name": "Alixandria Ali",
+      "email": "alixandria.ali@alpha.school",
+      "role": "Alpha Science DRI — PhysicsGraph/Crush comparison reviewer"
+    },
+    {
+      "name": "Pritish Chakravarty",
+      "email": "",
+      "role": "Former PhysicsGraph contact at Alpha/Trilogy — departed before 2026-02-11"
+    },
+    {
+      "name": "Chloe Belvin",
+      "email": "chloe.belvin@alpha.school",
+      "role": "Alpha School — midterm practice-test scheduling"
+    },
+    {
+      "name": "Crissy (surname not in threads)",
+      "email": "",
+      "role": "Alpha learning-science feedback contributor alongside Becky and Alixandria"
+    },
+    {
+      "name": "Nils Lang",
+      "email": "nils.lang@superbuilders.school",
+      "role": "Superbuilders — TimeBack integrations (cited PhysicsGraph as the integration model)"
+    }
+  ]
+}
