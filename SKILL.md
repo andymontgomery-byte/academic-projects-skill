@@ -93,15 +93,22 @@ node scripts/update.mjs request --as "who-you-are" --text "what should improve"
 
 ## The loops (already running — don't duplicate them)
 
-- **Reminders**: an hourly cloud routine reads this data source; on state
-  changes it drafts notifications to the affected owner, and once a day it
-  drafts every owner/sponsor a "here is your project — is all the data
-  right?" email linking the UI. Drafts land in Andy's Gmail for one-click
-  send.
-- **Skill improvement**: the same routine triages
-  `improvement_requests` + GitHub issues
-  (<https://github.com/andymontgomery-byte/academic-projects-skill/issues>)
-  into a stack-ranked queue.
+One engine, three delivery rails, one job each. The engine is
+`scripts/loop/remind.mjs` (deterministic, keyless — composes per-person
+notifications from the public gateway).
+
+- **Record** (durable): GitHub Actions (`.github/workflows/loop.yml`) runs
+  hourly for state-change alerts and daily at 12:50 UTC for the full digest,
+  posting to the rolling issue
+  <https://github.com/andymontgomery-byte/academic-projects-skill/issues/1>.
+- **Delivery to people**: an interactive-session cron creates the same
+  content as Gmail drafts in Andy's account for one-click send (Google's
+  Gmail MCP is draft-only and unavailable to headless runs — that constraint
+  picked this shape).
+- **Skill improvement**: a daily cloud routine
+  (`academic-projects-feedback-loop`, 13:40 UTC) stack-ranks
+  `improvement_requests` + GitHub issues, opens PRs on `loop/*` branches for
+  safe repo-only fixes, and comments its triage on issue #1.
 
 ## Sibling skills (don't duplicate their jobs)
 
