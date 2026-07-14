@@ -251,3 +251,26 @@ revoke execute on function ai_review_project(text, text) from public, anon;
 grant execute on function ai_review_project(text, text) to service_role;
 
 grant select on project_status, project_gaps, sy2026_27_changes to anon;
+-- The field-level change-capture trigger, rebuilt for the simplified form
+-- (to_jsonb access — never breaks on column changes the list forgets).
+create or replace function log_project_changes() returns trigger as $$
+declare
+  col text;
+  oldv text;
+  newv text;
+begin
+  foreach col in array array[
+    'name','subject','grade_min','grade_max','supplements','deliverable',
+    'hole_filling','replaces','parent_summary','standards_covered',
+    'passes_test','entry_gate','xp_hours','effective_for',
+    'release_date','bottleneck','notes','owner_id','sponsor_id']
+  loop
+    oldv := to_jsonb(old)->>col;
+    newv := to_jsonb(new)->>col;
+    if oldv is distinct from newv then
+      insert into change_log (table_name, row_id, field, old_value, new_value, changed_by)
+      values ('projects', new.id, col, oldv, newv, coalesce(current_setting('app.changed_by', true), 'unknown'));
+    end if;
+  end loop;
+  return new;
+end $$ language plpgsql;
