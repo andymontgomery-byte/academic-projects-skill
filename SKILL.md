@@ -80,12 +80,12 @@ node scripts/update.mjs request --as "who-you-are" --text "what should improve"
   owner. Apply only what the owner/sponsor actually said, attributed to them.
 - **Quantified outcomes need a number** — test scores or hours to
   end-of-grade mastery-gate pass, vs what it replaces.
-- **parent_summary must answer the five questions** every course needs to
-  answer (subject+grades; parent-recognizable test passed at what threshold;
-  entry gate; XP hours median/knows-it/knows-nothing + XP-per-minute +
-  farmability; which named students it works for, each with a 1-2 week
-  falsifiable hypothesis). Canonical: Workflowy `#/929b0e407c72`; also
-  brainlift row 9.
+- **The five questions are structured fields** (Q1 = subject + grade range;
+  Q2 `passes_test`; Q3 `entry_gate`; Q4 `xp_hours`; Q5 `effective_for`) —
+  answer them in internal terms. **`parent_summary` is the FIRST requirement:**
+  it rephrases those structured answers in plain parent language (the Scribble
+  example in Workflowy `#/929b0e407c72` is the register; the AI review rejects
+  internal jargon in it). Also brainlift row 9.
 - Approval stages are a **strict sequence** (enforced in the database):
   plan_approved_by_ai → approved_by_learning_science → ready_for_students →
   approved_by_andy → approved_by_campus_dris → approved_by_guides. A stage
