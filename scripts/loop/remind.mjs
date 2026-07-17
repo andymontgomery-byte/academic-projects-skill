@@ -18,7 +18,6 @@ const since = new Date(Date.now() - mins * 60_000).toISOString();
 const board = await (await fetch(`${GATEWAY}?since=${encodeURIComponent(since)}`)).json();
 const byId = new Map(board.status.map((p) => [p.id, p]));
 const emailOf = (name) => board.people.find((x) => x.name === name)?.email ?? null;
-const gapsOf = (slug) => board.gaps.find((g) => g.slug === slug)?.missing_fields ?? [];
 
 function nextStage(p) {
   const appr = board.approvals.filter((a) => a.project_id === p.id);
@@ -32,15 +31,42 @@ function nextStage(p) {
   return { stage, mover };
 }
 
+// BrainLift-as-the-form (Andy 2026-07-16): the owner has ONE action — keep
+// the BrainLift (and GitHub repo) linked and answering the required
+// questions. AI fills the form fields from those sources; these lines tell
+// the owner exactly what the sources still don't answer.
+const QUESTION_LABELS = {
+  parent_summary: 'the parent summary (plain language, no jargon)',
+  q1_subject_grades: 'Q1 — subject + grade range',
+  q2_standards: 'Q2 — 3rd-party standards covered AND not covered',
+  q3_passes_test: 'Q3 — test passed at what threshold, vs what it replaces',
+  q4_entry_gate: 'Q4 — entry mastery gate + threshold',
+  q5_xp_hours: 'Q5 — XP hours (median/knows-all/knows-nothing), XP/min, farmability',
+  q6_effective_for: 'Q6 — effective for whom (named students + 2-week hypotheses)',
+};
+
+function oneAction(p) {
+  if (!(p.brainlift_urls ?? []).length) {
+    return [`  ► ONE ACTION: link your BrainLift (and GitHub repo) — AI fills the whole form from them: ${UI}`];
+  }
+  const cov = p.source_coverage?.questions;
+  if (!cov) return ['  sources linked — AI assessment pending, nothing for you to do yet'];
+  const open = Object.entries(cov).filter(([, q]) => q?.verdict !== 'answered');
+  if (!open.length) return ['  your BrainLift answers every question — nothing to edit'];
+  return [
+    '  ► ONE ACTION — edit your BrainLift so it answers:',
+    ...open.map(([k, q]) => `    · ${QUESTION_LABELS[k] ?? k}: ${q?.ask ?? 'not found in the linked sources'}`),
+  ];
+}
+
 function projectBlock(p) {
-  const gaps = gapsOf(p.slug);
   const { stage, mover } = nextStage(p);
   return [
     `▸ ${p.name} (${p.subject ?? '?'} ${p.grade_min != null ? `G${p.grade_min}-G${p.grade_max}` : ''})`,
-    `  missing data: ${gaps.length ? gaps.join(', ') : 'none — complete'}`,
+    ...oneAction(p),
     `  next approval: ${stage ?? 'all approved'}${mover ? ` — moves when ${mover} acts` : ''}`,
-    `  release date: ${p.release_date ?? 'NOT COMMITTED'}`,
-    `  bottleneck: ${p.bottleneck ?? 'unanswered'}`,
+    `  release date: ${p.release_date ?? 'NOT COMMITTED — state it in your BrainLift'}`,
+    `  bottleneck: ${p.bottleneck ?? 'unanswered — state it in your BrainLift'}`,
   ].join('\n');
 }
 
@@ -88,18 +114,24 @@ if (mode === 'changes') {
     if (!to) continue;
     sections.push({
       to, cc: null,
-      subject: '[Academic Projects] Your daily check: is your project data right?',
-      body: `${who} — your Academic Projects as the data source sees them today:\n\n`
+      subject: '[Academic Projects] One action: does your BrainLift answer the questions?',
+      body: `${who} — your projects, and what your linked BrainLift/repo still don't answer. `
+        + `You don't fill forms anymore: AI fills every field from your BrainLift and GitHub repo. `
+        + `Your one job is keeping those sources linked and answering the questions.\n\n`
         + projects.map(projectBlock).join('\n\n')
-        + `\n\nFix anything wrong here (attributed, one click per field): ${UI}`,
+        + `\n\nLinks + coverage live here: ${UI}`,
     });
   }
   const open = (board.improvements ?? []).filter((r) => r.status === 'open');
   const noDate = board.status.filter((p) => !p.release_date).map((p) => `${p.name} (${p.owner ?? 'UNCLAIMED'})`);
+  const noSources = board.status.filter((p) => !(p.brainlift_urls ?? []).length).map((p) => `${p.name} (${p.owner ?? 'UNCLAIMED'})`);
+  const unassessed = board.status.filter((p) => (p.brainlift_urls ?? []).length && !p.source_coverage).map((p) => p.name);
   sections.push({
     to: 'andy.montgomery@alpha.school', cc: null,
     subject: '[Academic Projects] Daily ops digest',
     body: `Board: ${board.status.length} projects · ${board.gaps.reduce((n, g) => n + g.missing_fields.length, 0)} missing fields total\n\n`
+      + `No BrainLift linked (${noSources.length}): ${noSources.join('; ') || 'none'}\n`
+      + `Sources linked, AI assessment pending (${unassessed.length}): ${unassessed.join('; ') || 'none'}\n\n`
       + `No committed release date: ${noDate.length ? noDate.join('; ') : 'none'}\n\n`
       + `Open improvement requests (${open.length}):\n${open.map((r) => `  - ${r.request.slice(0, 140)} (by ${r.requested_by})`).join('\n') || '  none'}\n\n`
       + `UI: ${UI}`,

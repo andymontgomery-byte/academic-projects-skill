@@ -73,6 +73,34 @@ node scripts/update.mjs person --as "you@alpha.school" --name "..." --email "...
 node scripts/update.mjs request --as "who-you-are" --text "what should improve"
 ```
 
+## BrainLift is the form (the one owner action)
+
+Owners do not fill forms. Each project links its sources —
+`brainlift_urls` (the owner-authored BrainLift) and `github_repos` — and
+**AI fills every structured field from them**. The owner's ONE action is
+keeping the BrainLift linked and answering the required questions; the UI,
+the loop emails, and `source_coverage` all say exactly what the sources
+still don't answer.
+
+**The assess recipe** (any agent with this skill + the service key; the
+loops run it for projects whose sources changed):
+
+1. Read each `brainlift_urls` entry (Workflowy share links render as pages —
+   fetch them; API subtree reads only resolve nodes in your own account) and
+   each `github_repos` repo (README, specs, docs).
+2. For each required question (`parent_summary`, Q1 subject+grades,
+   `standards_covered`, `passes_test`, `entry_gate`, `xp_hours`,
+   `effective_for`): if the sources answer it, fill the field prefixed
+   `[AI guess — verify]` with the source named (per the prefill rule below).
+3. Record per-question coverage in `source_coverage`:
+   `{assessed_at, assessed_by, questions: {parent_summary|q1_subject_grades|
+   q2_standards|q3_passes_test|q4_entry_gate|q5_xp_hours|q6_effective_for:
+   {verdict: answered|partial|missing, evidence, ask}}}` — the `ask` is the
+   sentence telling the owner what to add to their BrainLift. Write it with
+   `update.mjs set <slug> --json '{"source_coverage": {...}}'`.
+4. Never overwrite an owner-verified field (no `[AI guess` prefix) with a
+   new guess — owners outrank sources.
+
 ## Rules
 
 - **Every write is attributed** (`--as <who>` / the UI name box → change_log).
@@ -81,7 +109,8 @@ node scripts/update.mjs request --as "who-you-are" --text "what should improve"
   `[AI guess — verify]` with the source named; owners edit or strip the
   prefix to confirm. The AI review treats guessed fields as answered but
   will not pass the plan until they are verified. A null field with no
-  evidence stays null — that gap belongs to its owner.
+  evidence stays null — that gap belongs to its owner (and the fix is
+  always the same: put the answer in the BrainLift).
 - **Q3 is the quantified promise and needs numbers** — the
   parent-recognizable test + threshold, and how that compares with what it
   replaces (score or hours delta). There is no separate outcomes field; each
@@ -144,7 +173,9 @@ notifications from the public gateway).
 ## Data model in one paragraph
 
 Supabase Postgres (`https://jigpfagovaueekufildm.supabase.co`, REST).
-`projects` (one row per replacement project, the data-dictionary fields) ·
+`projects` (one row per replacement project, the data-dictionary fields,
+plus the source columns: `brainlift_urls` + `github_repos` owner-maintained,
+`source_coverage` AI-maintained) ·
 `approvals` (6 ordered stages per project) · `app_stack` (subject × grade ×
 era × role → app; `stack_changes` view diffs now→next) · `people` ·
 `change_log` (every attributed change) · `brainlift` + `data_dictionary`
