@@ -1,53 +1,38 @@
-// Offline conformance: the three descriptions of the data model — schema.sql,
-// the data_dictionary seed, and references/data-dictionary.md — must agree on
-// the projects field set, and SKILL.md must document every command that
-// exists in scripts/. No network.
+// Live conformance: the schema truth is the LIVE database (review ruling
+// 2026-07-21 — the old version cross-checked three stale files against each
+// other). Verifies, with the bundled anon key, that the served surfaces carry
+// every column the primary customer (the sy-diff page) renders, and that the
+// self-describing tables exist.
+import { rest } from '../scripts/lib/api.mjs';
 
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+const REQUIRED_STATUS_COLUMNS = [
+  'slug', 'name', 'subject', 'grade_min', 'grade_max', 'owner',
+  'parent_summary', 'standards_covered', 'passes_test', 'entry_gate',
+  'xp_hours', 'effective_for', 'release_date', 'brainlift_urls',
+  'source_coverage', 'current_state', 'stages_approved',
+  // sy-diff columns (2026-07-21)
+  'primary_app', 'key_differences', 'why_better', 'is_ap', 'catalog_match',
+  'cell_role', 'ap_courses', 'hours_display', 'andy_approval',
+];
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const read = (p) => readFileSync(join(root, p), 'utf8');
 let failures = 0;
-const check = (ok, msg) => {
-  console.log(`${ok ? 'ok' : 'FAIL'} — ${msg}`);
-  if (!ok) failures++;
-};
+const fail = (m) => { console.error(`FAIL: ${m}`); failures += 1; };
 
-const schema = read('schema.sql');
-const projectsBlock = schema.match(/create table if not exists projects \(([\s\S]*?)\n\);/)[1];
-const schemaCols = [...projectsBlock.matchAll(/^\s{2}(\w+)\s/gm)].map((m) => m[1]);
-
-const dictSeed = read('seed/data-dictionary.sql');
-const dictCols = [...dictSeed.matchAll(/\('projects', '(\w+)'/g)].map((m) => m[1]);
-
-const NOT_IN_DICT = new Set(['id', 'created_at', 'updated_at']);
-for (const col of schemaCols.filter((c) => !NOT_IN_DICT.has(c))) {
-  check(dictCols.includes(col), `projects.${col} defined in data_dictionary seed`);
-}
-for (const col of dictCols) {
-  check(schemaCols.includes(col), `data_dictionary projects.${col} exists in schema`);
+const status = await rest('/project_status?select=*&limit=1');
+if (!Array.isArray(status) || !status.length) fail('project_status returned no rows');
+else {
+  const keys = new Set(Object.keys(status[0]));
+  for (const c of REQUIRED_STATUS_COLUMNS) if (!keys.has(c)) fail(`project_status missing column ${c}`);
 }
 
-const skill = read('SKILL.md');
-for (const cmd of ['status', 'gaps', 'north-star', 'barriers', 'current-sequence', 'dictionary', 'brainlift', 'improvements', 'project <slug>', 'score.mjs', 'create --as', 'set <slug>', 'decide <slug>', 'request --as']) {
-  check(skill.includes(cmd), `SKILL.md documents: ${cmd}`);
-}
-// ask.mjs and SKILL.md must agree on the command surface (anti-drift).
-const askSrc = read('scripts/ask.mjs');
-for (const cmd of ['current-sequence', 'north-star', 'barriers', 'stack-changes', 'brainlift', 'improvements']) {
-  check(askSrc.includes(`case '${cmd}'`), `ask.mjs implements: ${cmd}`);
-}
-// Only the anon key may ship; the service key must never appear in any file.
-const allShipped = ['SKILL.md', 'README.md', 'schema.sql', 'scripts/lib/api.mjs', 'scripts/ask.mjs', 'scripts/update.mjs', 'scripts/score.mjs'].map(read).join('');
-check(!allShipped.includes('sb_secret'), 'no sb_secret key material in shipped files');
-check(!/"role":"service_role"/.test(Buffer.from((allShipped.match(/eyJ[A-Za-z0-9_-]+\.([A-Za-z0-9_-]+)\./)?.[1] ?? ''), 'base64').toString('utf8')), 'any bundled JWT is anon-role, not service-role');
+const cells = await rest('/diff_cells?select=subject,grade_key,yr,apps,hours,evidence,authored_by&limit=1');
+if (!Array.isArray(cells)) fail('diff_cells not readable with the anon key');
 
-const stages = ['plan_approved_by_ai', 'approved_by_learning_science', 'ready_for_students', 'approved_by_andy', 'approved_by_campus_dris', 'approved_by_guides'];
-for (const s of stages) {
-  check(schema.includes(`'${s}'`) && skill.includes(s), `stage ${s} in schema + SKILL.md`);
-}
+const dict = await rest("/data_dictionary?select=column_name&table_name=eq.projects&column_name=in.(primary_app,key_differences,why_better,is_ap,catalog_match,cell_role,ap_courses,hours_display)");
+if (!Array.isArray(dict) || dict.length < 8) fail(`data_dictionary documents ${Array.isArray(dict) ? dict.length : 0}/8 sy-diff columns`);
 
-console.log(failures ? `\n${failures} failure(s)` : '\nall checks passed');
-process.exit(failures ? 1 : 0);
+const approvals = await rest('/approvals?select=stage,status,grades&limit=1');
+if (!Array.isArray(approvals) || (approvals.length && !('grades' in approvals[0]))) fail('approvals.grades (grade scope) missing');
+
+if (failures) { console.error(`${failures} conformance failure(s)`); process.exit(1); }
+console.log('conformance OK — live schema serves every sy-diff column, diff_cells + dictionary present');

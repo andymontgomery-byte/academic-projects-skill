@@ -92,6 +92,16 @@ loops run it for projects whose sources changed):
    `standards_covered`, `passes_test`, `entry_gate`, `xp_hours`,
    `effective_for`): if the sources answer it, fill the field prefixed
    `[AI guess — verify]` with the source named (per the prefill rule below).
+2b. Maintain the diff-report fields in the same call (the sy-diff page at
+   <https://timeback-loops-k8.vercel.app/sy-diff> renders them verbatim):
+   `primary_app` (serving app; 'TimeBack' = the alpha.timeback.com UI),
+   `key_differences` (≤3 bullets, ≤5 words each, fewer is better),
+   `why_better` (one 5-word outcomes explanation), `hours_display`
+   (short string like '~15 h'), `cell_role`
+   (main | hole-filling | supplement | assessment — only main-role
+   projects occupy the report's app column), `ap_courses` (jsonb list of
+   AP course families, for is_ap projects), `catalog_match` (ILIKE title
+   pattern for the project's uploaded TimeBack courses, only if verified).
 3. Record per-question coverage in `source_coverage`:
    `{assessed_at, assessed_by, questions: {parent_summary|q1_subject_grades|
    q2_standards|q3_passes_test|q4_entry_gate|q5_xp_hours|q6_effective_for:
@@ -149,6 +159,20 @@ loops run it for projects whose sources changed):
   hands ("Prediction: … pass the state end-of-course test at 90%+ first
   attempt"), with pilot evidence cited as support — never phrased as if the
   outcome were already measured at scale.
+
+## Disagree with what the report shows? (owners)
+
+Two channels, both watched by a headless triage agent every 30 minutes:
+
+1. **Ticket:** open an issue on
+   <https://github.com/andymontgomery-byte/academic-projects-skill/issues>.
+2. **Email:** send to andy.montgomery@alpha.school with the subject
+   containing **"ACADEMIC PROJECTS"**.
+
+The agent RCAs against your BrainLift + TimeBack production, replies after
+triage, fixes the data when the evidence supports it (owner statements
+outrank AI guesses — always attributed), and replies again after the fix.
+What needs Andy or code stays open with a named owner.
 
 ## The loops (already running — don't duplicate them)
 

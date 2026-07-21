@@ -62,7 +62,7 @@ function oneAction(p) {
 function projectBlock(p) {
   const { stage, mover } = nextStage(p);
   return [
-    `▸ ${p.name} (${p.subject ?? '?'} ${p.grade_min != null ? `G${p.grade_min}-G${p.grade_max}` : ''})`,
+    `▸ ${p.name} (${p.subject ?? '?'} ${p.grade_min != null ? gradeRangeLabel(p.grade_min, p.grade_max) : ''})`,
     ...oneAction(p),
     `  next approval: ${stage ?? 'all approved'}${mover ? ` — moves when ${mover} acts` : ''}`,
     `  release date: ${p.release_date ?? 'NOT COMMITTED — state it in your BrainLift'}`,

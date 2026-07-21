@@ -8,6 +8,7 @@
 //   node scripts/update.mjs person --as <who> --name "..." [--email ...] [--team academics|learning-science|superbuilders|other]
 
 import { rpc } from './lib/api.mjs';
+import { parseGrade } from './lib/grades.mjs';
 
 const args = process.argv.slice(2);
 const cmd = args[0];
@@ -44,10 +45,7 @@ switch (cmd) {
     if (!slug || !stage || !status) { console.error('usage: decide <slug> <stage> <status> --as <who> [--grades "3,4"] [--notes "..."]'); process.exit(1); }
     // Optional grade scope (Andy ruling 7/21): null = whole project.
     const gradesFlag = flag('grades');
-    const grades = gradesFlag ? gradesFlag.split(',').map((g) => {
-      const t = g.trim().toUpperCase();
-      return t === 'PK' ? -1 : t === 'K' ? 0 : Number.parseInt(t.replace(/^G/, ''), 10);
-    }) : null;
+    const grades = gradesFlag ? gradesFlag.split(',').map((g) => parseGrade(g)) : null;
     out(await rpc('decide_stage', { p_slug: slug, p_stage: stage, p_status: status, p_decided_by: changedBy, p_notes: flag('notes') ?? null, p_grades: grades }));
     break;
   }

@@ -14,6 +14,7 @@
 //   node scripts/ask.mjs project <slug>         # one project, everything
 
 import { rest } from './lib/api.mjs';
+import { gradeRangeLabel } from './lib/grades.mjs';
 
 const [cmd, arg] = process.argv.slice(2);
 
@@ -45,7 +46,7 @@ switch (cmd) {
         // FIRST requirement: how it reads to a parent leads the entry.
         parent_pitch: p.parent_summary ?? '(gap — no parent summary yet; owner: ' + (p.owner ?? 'UNCLAIMED') + ')',
         slug: p.slug, name: p.name, subject: p.subject,
-        grades: `${p.grade_min}-${p.grade_max}`,
+        grades: gradeRangeLabel(p.grade_min, p.grade_max),
         owner: p.owner, sponsor: p.sponsor,
         replaces: p.replaces,
         release_date: p.release_date,

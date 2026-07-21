@@ -15,6 +15,7 @@
 
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import puppeteer from 'puppeteer-core';
@@ -25,7 +26,6 @@ const STATE_DIR = join(homedir(), '.academic-projects-skill');
 const FINGERPRINTS = join(STATE_DIR, 'brainlift-fingerprints.json');
 const SNAP_DIR = join(STATE_DIR, 'brainlift-snapshots');
 const PROMPT_FILE = '/tmp/academic-projects-brainlift-reassess-prompt.md';
-const MAX_REASSESS_PER_RUN = 3;
 
 const log = (m) => console.log(`${new Date().toISOString()} ${m}`);
 
@@ -188,9 +188,9 @@ async function main() {
 
   writeFileSync(FINGERPRINTS, JSON.stringify(state, null, 1));
 
-  const queue = changed.slice(0, MAX_REASSESS_PER_RUN);
-  const deferred = changed.slice(MAX_REASSESS_PER_RUN);
-  if (deferred.length) log(`deferred to next run: ${deferred.map((c) => c.slug).join(', ')}`);
+  // All changed BrainLifts are processed this run — no deferral cap (review
+  // finding 7/21: the cap silently dropped fingerprinted-but-deferred work).
+  const queue = changed;
 
   // 25-26 diff-cell freshness (Andy 7/21: an LLM finds each cell with the
   // timeback skill). A subject qualifies when it has no cells or its newest
@@ -205,36 +205,88 @@ async function main() {
   });
   if (staleSubjects.length) log(`diff-cells stale/missing: ${staleSubjects.join(', ')}`);
 
+  // ── GitHub ticket intake (Andy 7/21: react and fix) ───────────────────────
+  const newTickets = [];
+  try {
+    const raw = execSync(
+      'gh issue list --repo andymontgomery-byte/academic-projects-skill --state open --json number,title,author,createdAt --limit 50',
+      { encoding: 'utf8', timeout: 60000 },
+    );
+    const lastSeen = state['__tickets']?.lastSeen ?? 0;
+    let maxSeen = lastSeen;
+    for (const iss of JSON.parse(raw)) {
+      if (iss.number === 1) continue; // rolling digest issue
+      if (iss.number > lastSeen) {
+        newTickets.push(iss);
+        maxSeen = Math.max(maxSeen, iss.number);
+      }
+    }
+    if (maxSeen > lastSeen) {
+      state['__tickets'] = { lastSeen: maxSeen, at: new Date().toISOString() };
+      writeFileSync(FINGERPRINTS, JSON.stringify(state, null, 1));
+    }
+    if (newTickets.length) log(`tickets: ${newTickets.map((t) => '#' + t.number).join(', ')}`);
+  } catch (e) { log(`ticket intake failed: ${String(e.message).slice(0, 100)}`); }
+
+  // ── "ACADEMIC PROJECTS" email intake (Mail.app, alpha account) ────────────
+  const newEmails = [];
+  try {
+    const raw = execSync(`osascript -e '
+      set out to ""
+      tell application "Mail"
+        repeat with m in (messages of inbox whose subject contains "ACADEMIC PROJECTS")
+          set out to out & (id of m) & "\t" & (sender of m) & "\t" & (subject of m) & "\n"
+        end repeat
+      end tell
+      return out'`, { encoding: 'utf8', timeout: 90000 });
+    const processed = new Set(state['__emails']?.processed ?? []);
+    const inboxDir = join(STATE_DIR, 'inbox');
+    mkdirSync(inboxDir, { recursive: true });
+    for (const lineRaw of raw.split('\n')) {
+      const [id, sender, subject] = lineRaw.split('\t');
+      if (!id || processed.has(id)) continue;
+      if (/andy\.montgomery@/.test(sender ?? '') || /academic projects agent/i.test(sender ?? '')) { processed.add(id); continue; }
+      const body = execSync(`osascript -e 'tell application "Mail" to get content of (first message of inbox whose id is ${Number(id)})'`, { encoding: 'utf8', timeout: 60000 }).slice(0, 20000);
+      const file = join(inboxDir, `${id}.txt`);
+      writeFileSync(file, `From: ${sender}\nSubject: ${subject}\n\n${body}`);
+      newEmails.push({ id, sender, subject, file });
+      processed.add(id);
+    }
+    state['__emails'] = { processed: [...processed].slice(-500), at: new Date().toISOString() };
+    writeFileSync(FINGERPRINTS, JSON.stringify(state, null, 1));
+    if (newEmails.length) log(`emails: ${newEmails.map((e) => e.id).join(', ')}`);
+  } catch (e) { log(`email intake failed: ${String(e.message).slice(0, 100)}`); }
+
+  // ── assemble the run prompt from whatever duties exist ────────────────────
+  const duties = [];
   if (queue.length) {
-    const prompt = `You are the Academic Projects BrainLift re-assess worker (headless, hourly watch).
-Working directory: ~/projects/academic-projects-skill. Read SKILL.md's "BrainLift is the form" assess recipe first.
-
-These BrainLifts CHANGED since their last assessment. The full current content of each is already fetched to a local snapshot file — read the snapshot, do NOT try to fetch Workflowy yourself.
-
+    duties.push(`BRAINLIFT CHANGES — these BrainLifts changed since their last assessment. Content is pre-fetched to snapshots; do NOT fetch Workflowy.
 ${queue.map((c) => `- project slug \`${c.slug}\` ("${c.name}", owner ${c.owner ?? 'UNCLAIMED'}) — source #${c.i} (${c.url}) — snapshot: ${c.snap}`).join('\n')}
+For each: (1) read the snapshot in full; (2) re-assess the 7 questions and write source_coverage via node scripts/update.mjs set <slug> --as "AI assess (30-min watch)" --json '{"source_coverage": {...}}' per SKILL.md; (3) refresh [AI guess — verify]-prefixed fields the content improves — NEVER overwrite owner-verified fields; (3b) maintain the diff-report fields (primary_app, key_differences <=3x5-word bullets, why_better 5 words, hours_display like '~15 h', cell_role main|hole-filling|supplement|assessment, ap_courses for AP projects, catalog_match only if verified) in the same call; (4) material changes get one line in loop/WATCH_LOG.md (commit+push that file only).`);
+  }
+  if (staleSubjects.length) duties.push(CELL_DUTY(staleSubjects[0]));
+  if (newTickets.length) {
+    duties.push(`NEW TICKETS on andymontgomery-byte/academic-projects-skill — triage, RCA, fix, respond:
+${newTickets.map((t) => `- #${t.number}: ${t.title} (by ${t.author?.login ?? '?'})`).join('\n')}
+For each ticket: read it (gh issue view N --comments); root-cause against the board data, the BrainLift snapshots (~/.academic-projects-skill/brainlift-snapshots/), and the timeback skill (~/.claude/skills/timeback) as needed. If it is a data disagreement you can verify, FIX the data (update.mjs set / decide / diff_cells upsert, attributed 'ticket #N (<requester>)') — owner statements outrank AI guesses. Comment your RCA + what you changed, then close it. If it needs Andy or code changes beyond data, comment the triage + who owns it and leave it open.`);
+  }
+  if (newEmails.length) {
+    duties.push(`NEW "ACADEMIC PROJECTS" EMAILS — triage, RCA, fix, reply (Andy 7/21 flow):
+${newEmails.map((e) => `- from ${e.sender} — "${e.subject}" — full text: ${e.file}`).join('\n')}
+For each email: (1) read it; (2) immediately send a short triage reply via zsh loop/reply-mail.sh "<their email address>" "Re: <subject>" <path-to-a-body-file-you-write> — acknowledge receipt + your initial read; (3) RCA against the board, snapshots, and the timeback skill; (4) if fixable in data, fix it (attributed 'email from <sender> <date>'; owner statements outrank AI guesses); (5) send a second reply describing exactly what changed (or why nothing did, or that it is escalated to Andy). Sign every reply "— Academic Projects agent (automated, on behalf of Andy)". Never reply to no-reply addresses or to andy.montgomery@ addresses.`);
+  }
 
-For each changed project:
-1. Read the snapshot in full.
-2. Re-assess the 7 questions (parent_summary, q1_subject_grades, q2_standards, q3_passes_test, q4_entry_gate, q5_xp_hours, q6_effective_for) and write source_coverage via: node scripts/update.mjs set <slug> --as "AI assess (hourly BrainLift watch)" --json '{"source_coverage": {...}}' — schema per SKILL.md (assessed_at today, assessed_by "AI assess (hourly BrainLift watch)", per-question verdict/evidence/ask).
-3. Refresh any [AI guess — verify]-prefixed fields the new content improves, in the same update call. NEVER overwrite an owner-verified field (one without the [AI guess prefix) — owners outrank sources.
-3b. Also maintain the diff-dashboard summary fields from the new content (you are the Fable summarizer for the sy-diff page): primary_app (the serving app; 'TimeBack' when served by the TimeBack UI), key_differences (max 3 bullets, max 5 words each, fewer is better), why_better (one 5-word explanation of better academic outcomes vs last year), and catalog_match (an ILIKE title pattern for the project's uploaded TimeBack courses, only if you can verify matches exist). Same update call.
-4. If the change is material (a question flipped verdict, a number changed), append one line per project to loop/WATCH_LOG.md: "<date> <slug>: <one-sentence what changed>". Commit and push loop/WATCH_LOG.md only (git add loop/WATCH_LOG.md && git commit && git push).
+  if (duties.length) {
+    writeFileSync(PROMPT_FILE, `You are the Academic Projects triage agent (headless, every 30 minutes).
+Working directory: ~/projects/academic-projects-skill. Doctrine: SKILL.md (gaps are the product; owners outrank sources; every write attributed).
 
-Do not email anyone. Do not touch Workflowy. Do not modify anything else in the repo. End with a one-line summary per project.
+${duties.join('\n\n')}
 
-${staleSubjects.length ? CELL_DUTY(staleSubjects[0]) : ''}`;
-    writeFileSync(PROMPT_FILE, prompt);
-    log(`REASSESS ${queue.length}: ${queue.map((c) => c.slug).join(', ')} → ${PROMPT_FILE}`);
-  } else if (staleSubjects.length) {
-    // No BrainLift changes, but cells need authoring — cells-only run.
-    writeFileSync(PROMPT_FILE, `You are the Academic Projects diff-cell author (headless, hourly watch).
-Working directory: ~/projects/academic-projects-skill.
-${CELL_DUTY(staleSubjects[0])}
-Do not email anyone. Do not touch Workflowy. End with a one-line summary.`);
-    log(`CELLS ${staleSubjects[0]} → ${PROMPT_FILE}`);
+Do not touch Workflowy. Do not modify the repo except loop/WATCH_LOG.md. End with a one-line summary per duty.`);
+    log(`RUN duties: ${[queue.length && 'brainlifts', staleSubjects.length && 'cells', newTickets.length && 'tickets', newEmails.length && 'emails'].filter(Boolean).join('+')} → ${PROMPT_FILE}`);
   } else {
     try { if (existsSync(PROMPT_FILE)) writeFileSync(PROMPT_FILE, ''); } catch { /* ignore */ }
-    log('no changes');
+    log('no work');
   }
   if (errors.length) log(`errors: ${errors.map((e) => `${e.slug}#${e.i} (${e.error})`).join('; ')}`);
 }
