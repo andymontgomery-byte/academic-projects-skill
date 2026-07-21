@@ -1,0 +1,5 @@
+# Academic Projects — 30-min triage watch log
+
+- 2026-07-21 ~22:05Z — **diff-cells (Math 25-26):** authored all 14 grade rows PK-12 via the timeback skill (live enrollments + processed_facts SY XP): Happy Numbers + Zearn at PK, Zearn K-3, Math Academy 4-12; hours from course totalXp/60; Incept 4th-grade copies (mostly summer-26), TEKS Timeback-UI modules, Edia/Freckle/Synthesis supplements and AP all excluded per doctrine. Upserted + read back, authored_by "Fable via timeback skill 2026-07-21".
+- 2026-07-21 ~22:05Z — **tickets:** clear — only rolling digest issue #1 open, no owner tickets, no recently closed.
+- 2026-07-21 ~22:05Z — **email channel HEALTH FINDING:** Mail.app is running but not answering AppleEvents (three probes incl. a 90s patient one → -1712 timeout), so the "ACADEMIC PROJECTS" inbox could not be scanned; the watcher's own email intake has NEVER recorded a successful scan (no `__emails` state in brainlift-fingerprints.json) — owner emails may be going unseen since the flow launched. Not restarting Mail from a headless run; needs Andy or an interactive session to check Mail.app.
