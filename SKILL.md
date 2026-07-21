@@ -121,13 +121,19 @@ loops run it for projects whose sources changed):
   it rephrases those structured answers in plain parent language (the Scribble
   example in Workflowy `#/929b0e407c72` is the register; the AI review rejects
   internal jargon in it). Also brainlift row 9.
-- Approval stages are a **strict sequence** (enforced in the database):
+- Approval stages are an **ordered ladder with implied cascade** (Andy
+  ruling 2026-07-21 — ONE system of record, constraints relaxed):
   plan_approved_by_ai → approved_by_learning_science → ready_for_students →
-  approved_by_andy → approved_by_campus_dris → approved_by_guides. A stage
-  can only be decided when every earlier stage is approved. **Stage 1 is
-  never a human decision** — `update.mjs ai-review <slug>` (or the UI's
-  "run AI review" button) computes approve/reject from the plan data itself
-  and writes the gap list as feedback. `release_date` = the owner's
+  approved_by_andy → approved_by_campus_dris → approved_by_guides.
+  **Approving a later stage auto-approves every earlier non-approved stage**,
+  attributed `<decider> (implied by <stage>)` and change-logged — anything
+  Andy approved has, by definition, passed the stages before his. Approval
+  rows carry an optional **`grades` scope** (jsonb array; null = whole
+  project; K = 0, PK = -1): `update.mjs decide <slug> <stage> approved
+  --as <who> --grades "3,4"`. The approvals table is the ONLY approval
+  record — never keep a parallel approval field elsewhere.
+  `update.mjs ai-review <slug>` (or the UI's "run AI review" button) is
+  still the normal path for stage 1. `release_date` = the owner's
   prediction of all-approved, in students' hands.
 - **One project = one block of courses.** A project row is a subject + a
   grade RANGE (`grade_min`–`grade_max`), not a single course — Math Quest is
