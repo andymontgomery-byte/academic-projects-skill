@@ -29,6 +29,24 @@ const MAX_REASSESS_PER_RUN = 3;
 
 const log = (m) => console.log(`${new Date().toISOString()} ${m}`);
 
+// The diff-cell authoring duty (Andy ruling 7/21: an LLM uses the timeback
+// skill to find each cell and writes it down; serving code never interprets).
+const CELL_DUTY = (subj) => `
+ALSO this run: author the 25-26 diff cells for the subject "${subj}" (its rows in
+the diff_cells table are missing or older than 7 days). Using the timeback
+production skill at ~/.claude/skills/timeback (scripts/timeback-query.mjs —
+courses + classes + enrollments + metrics.totalXp/60), determine for each grade
+PK-12: the MAIN app(s) students actually used in SY25-26 (judgment over real
+enrollment + catalog + PowerPath; exclude hole-filling, supplements, placement,
+practice/test and AP courses — AP belongs to AP rows) and the grade's expected
+XP hours. Upsert rows into diff_cells (subject, grade_key 'PK'/'K'/'1'..'12',
+yr '25-26', apps, hours like '~9 h', evidence naming courses + enrollment
+counts, authored_by 'Fable via timeback skill <date>') via Supabase REST with
+the service key (~/.academic-projects-skill/api-keys.json;
+POST /diff_cells?on_conflict=subject,grade_key,yr with Prefer
+resolution=merge-duplicates). Evidence must cite real query results — never
+guess. Grades with nothing real get apps 'none found' with the evidence.`;
+
 function sha(text) { return createHash('sha256').update(text).digest('hex'); }
 
 function loadState() {
@@ -174,6 +192,19 @@ async function main() {
   const deferred = changed.slice(MAX_REASSESS_PER_RUN);
   if (deferred.length) log(`deferred to next run: ${deferred.map((c) => c.slug).join(', ')}`);
 
+  // 25-26 diff-cell freshness (Andy 7/21: an LLM finds each cell with the
+  // timeback skill). A subject qualifies when it has no cells or its newest
+  // cell is older than 7 days; one subject per run.
+  const SUBJECTS = ['Science', 'Social Studies', 'Math', 'Reading', 'Language', 'Writing', 'Vocabulary', 'FastMath'];
+  const cellRows = board.diffCells ?? [];
+  const staleSubjects = SUBJECTS.filter((s) => {
+    const rows = cellRows.filter((r) => r.subject === s && r.yr === '25-26');
+    if (!rows.length) return true;
+    const newest = Math.max(...rows.map((r) => Date.parse(r.authored_at ?? 0)));
+    return Date.now() - newest > 7 * 24 * 3600 * 1000;
+  });
+  if (staleSubjects.length) log(`diff-cells stale/missing: ${staleSubjects.join(', ')}`);
+
   if (queue.length) {
     const prompt = `You are the Academic Projects BrainLift re-assess worker (headless, hourly watch).
 Working directory: ~/projects/academic-projects-skill. Read SKILL.md's "BrainLift is the form" assess recipe first.
@@ -189,9 +220,18 @@ For each changed project:
 3b. Also maintain the diff-dashboard summary fields from the new content (you are the Fable summarizer for the sy-diff page): primary_app (the serving app; 'TimeBack' when served by the TimeBack UI), key_differences (max 3 bullets, max 5 words each, fewer is better), why_better (one 5-word explanation of better academic outcomes vs last year), and catalog_match (an ILIKE title pattern for the project's uploaded TimeBack courses, only if you can verify matches exist). Same update call.
 4. If the change is material (a question flipped verdict, a number changed), append one line per project to loop/WATCH_LOG.md: "<date> <slug>: <one-sentence what changed>". Commit and push loop/WATCH_LOG.md only (git add loop/WATCH_LOG.md && git commit && git push).
 
-Do not email anyone. Do not touch Workflowy. Do not modify anything else in the repo. End with a one-line summary per project.`;
+Do not email anyone. Do not touch Workflowy. Do not modify anything else in the repo. End with a one-line summary per project.
+
+${staleSubjects.length ? CELL_DUTY(staleSubjects[0]) : ''}`;
     writeFileSync(PROMPT_FILE, prompt);
     log(`REASSESS ${queue.length}: ${queue.map((c) => c.slug).join(', ')} → ${PROMPT_FILE}`);
+  } else if (staleSubjects.length) {
+    // No BrainLift changes, but cells need authoring — cells-only run.
+    writeFileSync(PROMPT_FILE, `You are the Academic Projects diff-cell author (headless, hourly watch).
+Working directory: ~/projects/academic-projects-skill.
+${CELL_DUTY(staleSubjects[0])}
+Do not email anyone. Do not touch Workflowy. End with a one-line summary.`);
+    log(`CELLS ${staleSubjects[0]} → ${PROMPT_FILE}`);
   } else {
     try { if (existsSync(PROMPT_FILE)) writeFileSync(PROMPT_FILE, ''); } catch { /* ignore */ }
     log('no changes');
