@@ -1,5 +1,6 @@
-supabase/.temp/
+.DS_Store
 .env
 .env.*
 *.zip
-.DS_Store
+node_modules/
+supabase/.temp/

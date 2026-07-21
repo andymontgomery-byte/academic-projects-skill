@@ -1,0 +1,27 @@
+{
+  "name": "academic-projects-skill",
+  "version": "1.0.0",
+  "description": "The master data source for Academic Projects — replacement projects that upgrade cells of Alpha's PowerPath course sequence with apps/courses that deliver better academic outcomes. Ships as an agent skill: hosted zip + a Supabase Postgres data source spoken to with a URL + API key.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andymontgomery-byte/academic-projects-skill.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/andymontgomery-byte/academic-projects-skill/issues"
+  },
+  "homepage": "https://github.com/andymontgomery-byte/academic-projects-skill#readme",
+  "dependencies": {
+    "puppeteer-core": "^25.3.0"
+  }
+}
