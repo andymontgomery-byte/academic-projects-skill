@@ -186,6 +186,7 @@ For each changed project:
 1. Read the snapshot in full.
 2. Re-assess the 7 questions (parent_summary, q1_subject_grades, q2_standards, q3_passes_test, q4_entry_gate, q5_xp_hours, q6_effective_for) and write source_coverage via: node scripts/update.mjs set <slug> --as "AI assess (hourly BrainLift watch)" --json '{"source_coverage": {...}}' — schema per SKILL.md (assessed_at today, assessed_by "AI assess (hourly BrainLift watch)", per-question verdict/evidence/ask).
 3. Refresh any [AI guess — verify]-prefixed fields the new content improves, in the same update call. NEVER overwrite an owner-verified field (one without the [AI guess prefix) — owners outrank sources.
+3b. Also maintain the diff-dashboard summary fields from the new content (you are the Fable summarizer for the sy-diff page): primary_app (the serving app; 'TimeBack' when served by the TimeBack UI), key_differences (max 3 bullets, max 5 words each, fewer is better), why_better (one 5-word explanation of better academic outcomes vs last year), and catalog_match (an ILIKE title pattern for the project's uploaded TimeBack courses, only if you can verify matches exist). Same update call.
 4. If the change is material (a question flipped verdict, a number changed), append one line per project to loop/WATCH_LOG.md: "<date> <slug>: <one-sentence what changed>". Commit and push loop/WATCH_LOG.md only (git add loop/WATCH_LOG.md && git commit && git push).
 
 Do not email anyone. Do not touch Workflowy. Do not modify anything else in the repo. End with a one-line summary per project.`;
