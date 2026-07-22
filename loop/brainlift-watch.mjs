@@ -57,7 +57,18 @@ course with >=3 active student enrollments or real processed_facts usage —
 EXCLUDE practice/test containers, progress checks, review packets, test-outs,
 hole-filler shells, essay/FRQ/DBQ skill drills, WIP clones, and student-named
 personal copies. If the subject has no real AP course, write one row with
-grade_key 'AP:none' and apps 'none found' plus the evidence.`;
+grade_key 'AP:none' and apps 'none found' plus the evidence.
+
+APPROVED ⇒ TIMEBACK HOURS (Andy ruling 7/22): any project with an approved
+approved_by_andy stage does its approval process IN TimeBack, so its 26-27 XP
+hours MUST come from TimeBack production — never the BrainLift. Check every
+approved project this run: prefer catalog_match so nextHours prices per grade
+(clear hours_display if it overrides real catalog pricing); where nextHours
+can't bucket (per-student copies → use MEDIAN totalXp across variants; empty
+grades arrays → author the TB number into hours_display + xp_hours with the
+query evidence). If an approved project truly has NO priced TB course, that is
+a finding to surface (flag it in the run report / escalate) — do NOT fall back
+to BrainLift hours for approved work.`;
 
 function sha(text) { return createHash('sha256').update(text).digest('hex'); }
 
