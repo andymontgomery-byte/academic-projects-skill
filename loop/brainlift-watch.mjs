@@ -43,7 +43,13 @@ used in SY25-26 (judgment over real enrollment + usage + catalog + PowerPath;
 exclude hole-filling, supplements, placement, practice/test containers,
 personal copies and AP courses — AP belongs to AP rows; beware catalog
 defects: courseType NULL on real courses, junk totalXp, wrong grades arrays,
-enrolled-but-never-used courses) and the grade's expected XP hours. Upsert rows into diff_cells (subject, grade_key 'PK'/'K'/'1'..'12',
+enrolled-but-never-used courses) and the grade's expected XP hours.
+GRADE-MATERIAL RULE (Andy 7/22): a grade row lists apps serving THAT grade
+level's MATERIAL. Above-grade-level work by that age-grade's students belongs
+on the higher grade's row (PK kids doing Zearn K work is NOT a PK Math app —
+Zearn has no PK course). The converse stands too: an app that genuinely serves
+grade-G material to grade-G kids counts even when its catalog grades array is
+wrong (the Reading PK Mentava precedent). Upsert rows into diff_cells (subject, grade_key 'PK'/'K'/'1'..'12',
 yr '25-26', apps, hours like '~9 h', evidence naming courses + enrollment
 counts, authored_by 'Fable via timeback skill <date>') via Supabase REST with
 the service key (~/.academic-projects-skill/api-keys.json;
