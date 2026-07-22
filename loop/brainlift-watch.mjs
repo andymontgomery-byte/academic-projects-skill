@@ -32,14 +32,18 @@ const log = (m) => console.log(`${new Date().toISOString()} ${m}`);
 // The diff-cell authoring duty (Andy ruling 7/21: an LLM uses the timeback
 // skill to find each cell and writes it down; serving code never interprets).
 const CELL_DUTY = (subj) => `
-ALSO this run: author the 25-26 diff cells for the subject "${subj}" (its rows in
-the diff_cells table are missing or older than 7 days). Using the timeback
-production skill at ~/.claude/skills/timeback (scripts/timeback-query.mjs —
-courses + classes + enrollments + metrics.totalXp/60), determine for each grade
-PK-12: the MAIN app(s) students actually used in SY25-26 (judgment over real
-enrollment + catalog + PowerPath; exclude hole-filling, supplements, placement,
-practice/test and AP courses — AP belongs to AP rows) and the grade's expected
-XP hours. Upsert rows into diff_cells (subject, grade_key 'PK'/'K'/'1'..'12',
+ALSO this run: ADVERSARIALLY re-verify and re-author the 25-26 diff cells for
+the subject "${subj}" (its rows in diff_cells are missing or older than 7
+days). Treat every existing cell as a claim to attack: re-run the decisive
+queries via the timeback production skill at ~/.claude/skills/timeback
+(scripts/timeback-query.mjs — courses + classes + enrollments +
+metrics.totalXp/60 + processed_facts usage since 2025-08-01) and only then
+re-author. For each grade PK-12 determine: the MAIN app(s) students actually
+used in SY25-26 (judgment over real enrollment + usage + catalog + PowerPath;
+exclude hole-filling, supplements, placement, practice/test containers,
+personal copies and AP courses — AP belongs to AP rows; beware catalog
+defects: courseType NULL on real courses, junk totalXp, wrong grades arrays,
+enrolled-but-never-used courses) and the grade's expected XP hours. Upsert rows into diff_cells (subject, grade_key 'PK'/'K'/'1'..'12',
 yr '25-26', apps, hours like '~9 h', evidence naming courses + enrollment
 counts, authored_by 'Fable via timeback skill <date>') via Supabase REST with
 the service key (~/.academic-projects-skill/api-keys.json;
