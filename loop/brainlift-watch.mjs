@@ -167,7 +167,14 @@ async function main() {
       targets.push({ slug: p.slug, name: p.name, owner: p.owner, i, url });
     }
   }
-  log(`scan: ${targets.length} brainlift urls across ${(board.status ?? []).length} projects`);
+  // The main-view SPEC is itself a watched Workflowy source (Andy 7/22:
+  // spec amendments must reach the headless agent, not be ignored). Its
+  // changes get a dedicated realignment duty, not the BrainLift duty.
+  targets.push({
+    slug: '__spec', name: 'sy-diff main-view spec (Workflowy)', owner: 'Andy', i: 0,
+    url: 'https://workflowy.com/#/20cd87f869a6',
+  });
+  log(`scan: ${targets.length} brainlift urls across ${(board.status ?? []).length} projects (+ the main-view spec)`);
 
   let wfKey = null;
   try { wfKey = readFileSync(join(homedir(), '.workflowy/api.key'), 'utf8').trim(); } catch { /* app-url fetches will fail loudly */ }
@@ -219,7 +226,8 @@ async function main() {
 
   // All changed BrainLifts are processed this run — no deferral cap (review
   // finding 7/21: the cap silently dropped fingerprinted-but-deferred work).
-  const queue = changed;
+  const specChanged = changed.find((c) => c.slug === '__spec');
+  const queue = changed.filter((c) => c.slug !== '__spec');
 
   // 25-26 diff-cell freshness (Andy 7/21: an LLM finds each cell with the
   // timeback skill). A subject qualifies when it has no cells or its newest
@@ -314,14 +322,35 @@ For each email: (1) read it; (2) immediately send a short triage reply via zsh l
 RUCHI APPROVALS (Andy ruling 7/22 — email-gated, zero inference): the sy-diff "Ruchi" column reads ONLY the approved_by_ruchi approvals stage. You may set that stage to approved ONLY when an email actually FROM Ruchi (to Andy) explicitly approves a specific project/subject/grade — quote her exact sentence in the approval notes, cite the email date, set --grades to exactly what she approved, decided_by "Ruchi <date> (email to Andy, recorded by loop)". It is NEVER implied by any other stage (Andy's approvals cascade into ready_for_students, NOT into approved_by_ruchi), never inferred from a BrainLift, a ticket, a meeting mention, or anyone else's email. A Ruchi email that does not explicitly approve records nothing. Do not send triage replies to Ruchi emails that aren't ACADEMIC PROJECTS-subject tickets — just record any explicit approval.`);
   }
 
+  if (specChanged) {
+    duties.push(`THE MAIN-VIEW SPEC CHANGED — Andy amended the Workflowy spec node (pre-fetched snapshot: ${specChanged.snap}; do NOT fetch Workflowy).
+(1) Read the snapshot in full; diff it against the mirror at ~/projects/timeback-loops-k8/docs/SY_DIFF_SPEC.md; update the mirror to match and commit+push ONLY that file in the timeback-loops-k8 repo (message "docs: mirror spec amendment <date>") — the one allowed edit outside this repo.
+(2) Re-validate ALL projects and diff_cells against the amended spec (conformance block below); fix data violations, attributed 'spec amendment <date>'.
+(3) Anything the amendment requires of RENDER code (SyDiff.jsx etc.) is NOT yours to change — escalate by emailing andy.montgomery@alpha.school via zsh loop/reply-mail.sh with subject "ACADEMIC PROJECTS — spec change needs render work", listing the changed spec lines and exactly what the page must do differently.`);
+  }
+
+  // Standing conformance block — Andy 7/22 ("change the directions and context
+  // so the workflow won't be ignored"): the spec rides along on EVERY run.
+  const SPEC_BLOCK = `MAIN-VIEW SPEC CONFORMANCE (binding on every cell/field you author or edit; spec of record: Workflowy node 20cd87f869a6, mirrored at ~/projects/timeback-loops-k8/docs/SY_DIFF_SPEC.md — re-read the mirror before writing):
+- App·hours columns (both years) name the PRIMARY app(s) of the main sequence ONLY — never hole-filling, supplement, or assessment app names.
+- Hours = total expected XP hours of the grade level. 25-26: 100% from the timeback skill. 26-27: TimeBack first, BrainLift second — and ANY Andy-approved project MUST price from TimeBack production (catalog_match → per-grade nextHours; per-student copies → MEDIAN totalXp across variants; no TB price = escalate, never BrainLift).
+- key_differences: <=3 bullets, <=5 words each, fewer is better. why_better: ONE simple 5-word explanation. Fix any stored field violating these (npm test now asserts them).
+- Grade-material rule: a grade row lists apps serving THAT grade's material; above-level work belongs on the higher grade's row.
+- After G12: non-standard courses (ISEE, SAT) and multi-grade course sets get own rows (diff_cells 'NG:<label>' + ap_courses labels), then each AP course ('AP:<family>').
+- Naming when TimeBack-served: Alpha[Subject] by [Team] (TimeBack); AP: Alpha[course] by [Team]; teams SuperBuilders/Academics/PhysicsGraph/Vaidik/LearnWithAI, else the person's name.
+- Andy column = approved_by_andy (grade-scoped); Ruchi column = approved_by_ruchi (email-gated, never implied by anything).
+Render-side violations you cannot fix in data → email andy.montgomery@alpha.school (subject "ACADEMIC PROJECTS — render/spec misalignment") describing the exact misalignment; never silently skip.`;
+
   if (duties.length) {
     writeFileSync(PROMPT_FILE, `You are the Academic Projects triage agent (headless, every 30 minutes).
 Working directory: ~/projects/academic-projects-skill. Doctrine: SKILL.md (gaps are the product; owners outrank sources; every write attributed).
 
 ${duties.join('\n\n')}
 
-Do not touch Workflowy. Do not modify the repo except loop/WATCH_LOG.md. End with a one-line summary per duty.`);
-    log(`RUN duties: ${[queue.length && 'brainlifts', staleSubjects.length && 'cells', newTickets.length && 'tickets', newEmails.length && 'emails'].filter(Boolean).join('+')} → ${PROMPT_FILE}`);
+${SPEC_BLOCK}
+
+Do not touch Workflowy. Do not modify the repo except loop/WATCH_LOG.md (plus the spec-mirror exception above when the spec changed). End with a one-line summary per duty.`);
+    log(`RUN duties: ${[queue.length && 'brainlifts', staleSubjects.length && 'cells', newTickets.length && 'tickets', newEmails.length && 'emails', specChanged && 'SPEC'].filter(Boolean).join('+')} → ${PROMPT_FILE}`);
   } else {
     try { if (existsSync(PROMPT_FILE)) writeFileSync(PROMPT_FILE, ''); } catch { /* ignore */ }
     log('no work');

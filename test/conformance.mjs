@@ -34,5 +34,26 @@ if (!Array.isArray(dict) || dict.length < 8) fail(`data_dictionary documents ${A
 const approvals = await rest('/approvals?select=stage,status,grades&limit=1');
 if (!Array.isArray(approvals) || (approvals.length && !('grades' in approvals[0]))) fail('approvals.grades (grade scope) missing');
 
+// ── Main-view SPEC assertions (Andy 7/22: prevent spec drift for every
+// subject × grade — the Workflowy spec node, mirrored in the dashboard repo
+// at docs/SY_DIFF_SPEC.md, is binding on the DATA):
+//   key_differences <=3 bullets of <=5 words; why_better <=5 words;
+//   Andy-approved projects price from TimeBack production, never BrainLift.
+const words = (s) => String(s).trim().split(/\s+/).filter(Boolean).length;
+const all = await rest('/project_status?select=slug,key_differences,why_better,hours_display,catalog_match,xp_hours,andy_approval,cell_role');
+for (const p of all ?? []) {
+  const kd = p.key_differences ?? [];
+  if (kd.length > 3) fail(`${p.slug}: key_differences has ${kd.length} bullets (spec: <=3)`);
+  for (const b of kd) if (words(b) > 5) fail(`${p.slug}: bullet "${b}" is ${words(b)} words (spec: <=5)`);
+  if (p.why_better && words(p.why_better) > 5) fail(`${p.slug}: why_better "${p.why_better}" is ${words(p.why_better)} words (spec: 5-word explanation)`);
+  const andyApproved = p.andy_approval?.status === 'approved';
+  if (andyApproved) {
+    const tbPriced = Boolean(p.catalog_match) || /TimeBack/i.test(p.hours_display ?? '');
+    if (!tbPriced && p.cell_role !== 'assessment') {
+      fail(`${p.slug}: Andy-approved but hours are not from TimeBack production (no catalog_match, hours_display=${JSON.stringify(p.hours_display)})`);
+    }
+  }
+}
+
 if (failures) { console.error(`${failures} conformance failure(s)`); process.exit(1); }
-console.log('conformance OK — live schema serves every sy-diff column, diff_cells + dictionary present');
+console.log('conformance OK — live schema serves every sy-diff column, diff_cells + dictionary present, spec constraints hold');
