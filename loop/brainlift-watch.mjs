@@ -45,7 +45,15 @@ counts, authored_by 'Fable via timeback skill <date>') via Supabase REST with
 the service key (~/.academic-projects-skill/api-keys.json;
 POST /diff_cells?on_conflict=subject,grade_key,yr with Prefer
 resolution=merge-duplicates). Evidence must cite real query results — never
-guess. Grades with nothing real get apps 'none found' with the evidence.`;
+guess. Grades with nothing real get apps 'none found' with the evidence.
+ALSO maintain the subject's AP rows the same way: one diff_cells row per real
+main-sequence AP course family, grade_key 'AP:<family>' (e.g. 'AP:AP Biology'),
+apps = the serving app(s), hours from totalXp/60 when priced. Real = actual AP
+course with >=3 active student enrollments or real processed_facts usage —
+EXCLUDE practice/test containers, progress checks, review packets, test-outs,
+hole-filler shells, essay/FRQ/DBQ skill drills, WIP clones, and student-named
+personal copies. If the subject has no real AP course, write one row with
+grade_key 'AP:none' and apps 'none found' plus the evidence.`;
 
 function sha(text) { return createHash('sha256').update(text).digest('hex'); }
 
