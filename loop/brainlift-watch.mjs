@@ -243,14 +243,21 @@ async function main() {
   // ── "ACADEMIC PROJECTS" email intake (Mail.app, alpha account) ────────────
   const newEmails = [];
   try {
+    // Two intakes: the "ACADEMIC PROJECTS" subject channel, plus ANY mail
+    // from Ruchi — her approval emails gate the approved_by_ruchi stage
+    // (Andy 7/22: "wait until you see an email from Ruchi to me approving
+    // something before you mark any Ruchi-approved greens").
     const raw = execSync(`osascript -e '
       set out to ""
       tell application "Mail"
         repeat with m in (messages of inbox whose subject contains "ACADEMIC PROJECTS")
           set out to out & (id of m) & "\t" & (sender of m) & "\t" & (subject of m) & "\n"
         end repeat
+        repeat with m in (messages of inbox whose sender contains "ruchi")
+          set out to out & (id of m) & "\t" & (sender of m) & "\t" & (subject of m) & "\n"
+        end repeat
       end tell
-      return out'`, { encoding: 'utf8', timeout: 90000 });
+      return out'`, { encoding: 'utf8', timeout: 120000 });
     const processed = new Set(state['__emails']?.processed ?? []);
     const inboxDir = join(STATE_DIR, 'inbox');
     mkdirSync(inboxDir, { recursive: true });
@@ -285,7 +292,9 @@ For each ticket: read it (gh issue view N --comments); root-cause against the bo
   if (newEmails.length) {
     duties.push(`NEW "ACADEMIC PROJECTS" EMAILS — triage, RCA, fix, reply (Andy 7/21 flow):
 ${newEmails.map((e) => `- from ${e.sender} — "${e.subject}" — full text: ${e.file}`).join('\n')}
-For each email: (1) read it; (2) immediately send a short triage reply via zsh loop/reply-mail.sh "<their email address>" "Re: <subject>" <path-to-a-body-file-you-write> — acknowledge receipt + your initial read; (3) RCA against the board, snapshots, and the timeback skill; (4) if fixable in data, fix it (attributed 'email from <sender> <date>'; owner statements outrank AI guesses); (5) send a second reply describing exactly what changed (or why nothing did, or that it is escalated to Andy). Sign every reply "— Academic Projects agent (automated, on behalf of Andy)". Never reply to no-reply addresses or to andy.montgomery@ addresses.`);
+For each email: (1) read it; (2) immediately send a short triage reply via zsh loop/reply-mail.sh "<their email address>" "Re: <subject>" <path-to-a-body-file-you-write> — acknowledge receipt + your initial read; (3) RCA against the board, snapshots, and the timeback skill; (4) if fixable in data, fix it (attributed 'email from <sender> <date>'; owner statements outrank AI guesses); (5) send a second reply describing exactly what changed (or why nothing did, or that it is escalated to Andy). Sign every reply "— Academic Projects agent (automated, on behalf of Andy)". Never reply to no-reply addresses or to andy.montgomery@ addresses.
+
+RUCHI APPROVALS (Andy ruling 7/22 — email-gated, zero inference): the sy-diff "Ruchi" column reads ONLY the approved_by_ruchi approvals stage. You may set that stage to approved ONLY when an email actually FROM Ruchi (to Andy) explicitly approves a specific project/subject/grade — quote her exact sentence in the approval notes, cite the email date, set --grades to exactly what she approved, decided_by "Ruchi <date> (email to Andy, recorded by loop)". It is NEVER implied by any other stage (Andy's approvals cascade into ready_for_students, NOT into approved_by_ruchi), never inferred from a BrainLift, a ticket, a meeting mention, or anyone else's email. A Ruchi email that does not explicitly approve records nothing. Do not send triage replies to Ruchi emails that aren't ACADEMIC PROJECTS-subject tickets — just record any explicit approval.`);
   }
 
   if (duties.length) {
