@@ -208,6 +208,10 @@ async function main() {
         writeFileSync(snap, res.text);
         state[key] = { url: t.url, hash, baselinedAt: new Date().toISOString(), checkedAt: new Date().toISOString() };
         log(`BASE ${key} (${res.text.length} chars)`);
+        // A brand-new source needs a FIRST assessment, not just a baseline —
+        // found 2026-07-24: Ilma's four new AP BrainLifts and Janna's
+        // AlphaMath BrainLift sat baselined-but-never-assessed overnight.
+        changed.push({ ...t, snap, chars: res.text.length, firstAssess: true });
       } else if (prev.hash !== hash || prev.url !== t.url) {
         writeFileSync(snap, res.text);
         state[key] = { url: t.url, hash, changedAt: new Date().toISOString(), checkedAt: new Date().toISOString() };
